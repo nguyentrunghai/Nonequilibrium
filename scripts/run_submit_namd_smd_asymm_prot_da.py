@@ -39,6 +39,11 @@ for i, f in pdb_files:
     if not os.path.exists(f):
         raise Exception(f + " does not exist")
 
+
+assert os.path.exists(args.structure_file), args.structure_file + " does not exist."
+assert os.path.exists(args.parm_file), args.parm_file + " does not exist."
+assert os.path.exists(args.tcl_file), args.tcl_file + " does not exist."
+
 for i, pdb_file in pdb_files:
     out_dir = "%d"%i
 
