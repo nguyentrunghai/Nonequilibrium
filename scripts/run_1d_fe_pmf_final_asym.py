@@ -20,6 +20,8 @@ from _fe_pmf import pull_fe_pmf
 parser = argparse.ArgumentParser()
 
 parser.add_argument( "--pulling_data_nc_file",      type=str, default="1d_simulation_results_100repeats.nc")
+
+parser.add_argument( "--other_pulling_data_nc_files",      type=str, default="")   # to determine pmf bin
 parser.add_argument( "--pmf_nbins",                 type=int, default=25)
 
 parser.add_argument( "--estimators",                type=str, default="u b s1 s2")
@@ -28,8 +30,8 @@ parser.add_argument( "--is_system_symmetric",       action="store_true", default
 parser.add_argument( "--fe_out_prefix",             type=str, default="fe")
 parser.add_argument( "--pmf_out_prefix",            type=str, default="pmf")
 
-
 args = parser.parse_args()
+
 
 print("pulling_data_nc_file", args.pulling_data_nc_file)
 print("pmf_nbins", args.pmf_nbins)
@@ -37,10 +39,21 @@ print("estimators", args.estimators)
 print("is_system_symmetric", args.is_system_symmetric)
 
 
-def _pmf_bin_edges(pulling_data, nbins):
-    zF_t = pulling_data["zF_t"]
-    zR_t = pulling_data["zR_t"]
-    return equal_spaced_bins([zF_t, zR_t], nbins, symmetric_center=0)
+def _pmf_bin_edges(pulling_files, nbins):
+    trajs = []
+    for f in pulling_files:
+        data = nc.Dataset(f, "r")
+        zF_t = data.variables["zF_t"]
+        zR_t = data.variables["zR_t"]
+        trajs.append(zF_t)
+        trajs.append(zR_t)
+    return equal_spaced_bins(trajs, nbins, symmetric_center=0)
+
+
+#def _pmf_bin_edges(pulling_data, nbins):
+#    zF_t = pulling_data["zF_t"]
+#    zR_t = pulling_data["zR_t"]
+#    return equal_spaced_bins([zF_t, zR_t], nbins, symmetric_center=0)
 
 
 def num_fe(pulling_data, is_system_symmetric):
@@ -84,7 +97,9 @@ def _exact_pmf(is_system_symmetric, pmf_bin_edges):
 
 pulling_data = load_1d_sim_results(args.pulling_data_nc_file)
 estimators = args.estimators.split()
-pmf_bin_edges = _pmf_bin_edges(pulling_data, args.pmf_nbins) 
+
+pulling_files = args.other_pulling_data_nc_files.split() + [args.pulling_data_nc_file]
+pmf_bin_edges = _pmf_bin_edges(pulling_files, args.pmf_nbins)
 print("pmf_bin_edges", pmf_bin_edges)
 
 num_free_energies = num_fe(pulling_data, args.is_system_symmetric)
