@@ -254,7 +254,7 @@ def sym_est_df_t_v1(w_t):
     return df_t
 
 
-def sym_est_pmf_v1(z_t, w_t, lambda_t, V, ks, bin_edges, is_system_symmetric):
+def sym_est_pmf_v1(z_t, w_t, lambda_t, V, ks, bin_edges, symmetrize_pmf):
     """
     Version 1 of symmetric estimator for PMF
 
@@ -282,11 +282,8 @@ def sym_est_pmf_v1(z_t, w_t, lambda_t, V, ks, bin_edges, is_system_symmetric):
     bin_edges   :   np.ndarray with shape ( nbins+1, )
                     same distance unit as zF_t and zR_t
 
-    is_system_symmetric :   bool
-                                True  means there exists Z such that pmf(Z-z) = pmf(Z+z) for all z>0
-                                Z is the symmetric center
-                                False means the system is asymmetric, but the protocol is symmetric, i.e.,
-                                lambda_t = lambda_{t + T}, where T is some period
+    symmetrize_pmf :   bool
+                         should set to True when both system and protocol are symmetric
     -----------------
     return
                 centers :   np.ndarray with shape (bin_edges.shape[0]-1 )
@@ -306,7 +303,7 @@ def sym_est_pmf_v1(z_t, w_t, lambda_t, V, ks, bin_edges, is_system_symmetric):
     wTR_t = time_reversal_of_work(w_t)
     zTR_t = time_reversal_of_trajectory(z_t)
 
-    if is_system_symmetric:
+    if symmetrize_pmf:
         symm_center = (lambda_t[0] + lambda_t[-1])/2.
         zTR_t = center_reflection(zTR_t, symm_center)
 
@@ -362,7 +359,7 @@ def sym_est_df_t_v2(w_t):
     return df_t
 
 
-def sym_est_pmf_v2(z_t, w_t, lambda_t, V, ks, bin_edges, is_system_symmetric):
+def sym_est_pmf_v2(z_t, w_t, lambda_t, V, ks, bin_edges, symmetrize_pmf):
     """
     Version 2 of symmetric estimator for PMF
 
@@ -390,11 +387,8 @@ def sym_est_pmf_v2(z_t, w_t, lambda_t, V, ks, bin_edges, is_system_symmetric):
     bin_edges   :   np.ndarray with shape ( nbins+1, )
                     same distance unit as zF_t and zR_t
 
-    is_system_symmetric :   bool
-                                True  means there exists Z such that pmf(Z-z) = pmf(Z+z) for all z>0
-                                Z is the symmetric center
-                                False means the system is asymmetric, but the protocol is symmetric, i.e.,
-                                lambda_t = lambda_{t + T}, where T is some period
+    symmetrize_pmf :   bool
+                         should set to True when both system and protocol are symmetric
     -----------------
     return
                 centers :   np.ndarray with shape (bin_edges.shape[0]-1 )
@@ -414,7 +408,7 @@ def sym_est_pmf_v2(z_t, w_t, lambda_t, V, ks, bin_edges, is_system_symmetric):
     wTR_t = time_reversal_of_work(w_t)
     zTR_t = time_reversal_of_trajectory(z_t)
 
-    if is_system_symmetric:
+    if symmetrize_pmf:
         symm_center = (lambda_t[0] + lambda_t[-1])/2.
         zTR_t = center_reflection(zTR_t, symm_center)
 
