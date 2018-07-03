@@ -24,8 +24,12 @@ parser.add_argument( "--pulling_data_nc_file",      type=str, default="1d_simula
 parser.add_argument( "--other_pulling_data_nc_files",      type=str, default="")   # to determine pmf bin
 parser.add_argument( "--pmf_nbins",                 type=int, default=25)
 
+
+parser.add_argument( "--system_type",    type=str,   default="asymmetric")       #  # symmetric or asymmetric
+# for symmetric system, asymmetric protocol means pulling only one half of the pmf
+parser.add_argument( "--protocol_type",  type=str,   default="asymmetric")   # symmetric or asymmetric
+
 parser.add_argument( "--estimators",                type=str, default="u b s1 s2")
-parser.add_argument( "--is_system_symmetric",       action="store_true", default=False)
 
 parser.add_argument( "--fe_out_prefix",             type=str, default="fe")
 parser.add_argument( "--pmf_out_prefix",            type=str, default="pmf")
@@ -36,7 +40,7 @@ args = parser.parse_args()
 print("pulling_data_nc_file", args.pulling_data_nc_file)
 print("pmf_nbins", args.pmf_nbins)
 print("estimators", args.estimators)
-print("is_system_symmetric", args.is_system_symmetric)
+print("system_type", args.system_type)
 
 
 def _pmf_bin_edges(pulling_files, nbins):
