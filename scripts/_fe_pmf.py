@@ -10,28 +10,36 @@ from estimators import sym_est_df_t_v1, sym_est_pmf_v1
 from estimators import sym_est_df_t_v2, sym_est_pmf_v2
 
 
-def _use_unidirectional(pulling_data, pmf_bin_edges, V):
+def _use_unidirectional(pulling_data, pmf_bin_edges, V, which_data):
     """
     """
     print("use unidirectional estimators")
+    assert which_data in ["f", "r"], "unknown which_data"
 
     ks = pulling_data["ks"]
     dt = pulling_data["dt"]
-    lambda_F = pulling_data["lambda_F"]
-    wF_t = pulling_data["wF_t"]
-    zF_t = pulling_data["zF_t"]
 
-    repeats, nsamples, times = wF_t.shape
+    if which_data == "f":
+        lambdas = pulling_data["lambda_F"]
+        w_t = pulling_data["wF_t"]
+        z_t = pulling_data["zF_t"]
+
+    elif which_data == "r":
+        lambdas = pulling_data["lambda_R"]
+        w_t = pulling_data["wR_t"]
+        z_t = pulling_data["zR_t"]
+
+    repeats, nsamples, times = w_t.shape
 
     free_energies = {}
-    free_energies["lambdas"] = lambda_F
+    free_energies["lambdas"] = lambdas
 
     if "pulling_times" in pulling_data:
         print("pulling_times is available")
         free_energies["pulling_times"] = pulling_data["pulling_times"]
     else:
         print("pulling_times calculated from dt")
-        free_energies["pulling_times"] = np.arange(len(lambda_F)) * dt
+        free_energies["pulling_times"] = np.arange(len(lambdas)) * dt
 
     free_energies["fes"] = {}
     free_energies["ks"] = ks
@@ -42,9 +50,9 @@ def _use_unidirectional(pulling_data, pmf_bin_edges, V):
     pmfs["ks"] = ks
 
     for repeat in range(repeats):
-        free_energies["fes"][str(repeat)] = uni_df_t(wF_t[repeat])
+        free_energies["fes"][str(repeat)] = uni_df_t(w_t[repeat])
 
-        _, pmfs["pmfs"][str(repeat)] = uni_pmf(zF_t[repeat], wF_t[repeat], lambda_F, V, ks, pmf_bin_edges)
+        _, pmfs["pmfs"][str(repeat)] = uni_pmf(z_t[repeat], w_t[repeat], lambdas, V, ks, pmf_bin_edges)
 
     free_energies["mean"] = np.stack(free_energies["fes"].values()).mean(axis=0)
     free_energies["std"] = np.stack(free_energies["fes"].values()).std(axis=0)
@@ -108,7 +116,7 @@ def _use_bidirectional(pulling_data, pmf_bin_edges, V):
     return free_energies, pmfs
 
 
-def _use_symmetric(pulling_data, pmf_bin_edges, version, is_system_symmetric, V):
+def _use_symmetric(pulling_data, pmf_bin_edges, version, symmetrize_pmf, V):
     """
     version :   int, either 1 or 2
     is_system_symmetric :   bool,
@@ -154,7 +162,7 @@ def _use_symmetric(pulling_data, pmf_bin_edges, version, is_system_symmetric, V)
         free_energies["fes"][str(repeat)] = fe_estimator(wF_t[repeat])
 
         _, pmfs["pmfs"][str(repeat)] = pmf_estimator(zF_t[repeat], wF_t[repeat], lambda_F, V, ks,
-                                                     pmf_bin_edges, is_system_symmetric)
+                                                     pmf_bin_edges, symmetrize_pmf)
 
     free_energies["mean"] = np.stack(free_energies["fes"].values()).mean(axis=0)
     free_energies["std"] = np.stack(free_energies["fes"].values()).std(axis=0)
@@ -165,20 +173,23 @@ def _use_symmetric(pulling_data, pmf_bin_edges, version, is_system_symmetric, V)
     return free_energies, pmfs
 
 
-def pull_fe_pmf(which_estimator, pulling_data, pmf_bin_edges, is_system_symmetric, V):
-    assert which_estimator in ["u", "b", "s1", "s2"], "which_estimator must be one of ['u', 'b', 's1', 's2']"
+def pull_fe_pmf(which_estimator, pulling_data, pmf_bin_edges, symmetrize_pmf, V):
+    assert which_estimator in ["uf", "ur", "b", "s1", "s2"], "which_estimator must be one of ['uf', 'ur', 'b', 's1', 's2']"
 
-    if which_estimator == "u":
-        free_energies, pmfs = _use_unidirectional(pulling_data, pmf_bin_edges, V)
+    if which_estimator == "uf":
+        free_energies, pmfs = _use_unidirectional(pulling_data, pmf_bin_edges, V, "f")
+
+    if which_estimator == "ur":
+        free_energies, pmfs = _use_unidirectional(pulling_data, pmf_bin_edges, V, "r")
 
     elif which_estimator == "b":
         free_energies, pmfs = _use_bidirectional(pulling_data, pmf_bin_edges, V)
 
     elif which_estimator == "s1":
-        free_energies, pmfs = _use_symmetric(pulling_data, pmf_bin_edges, 1, is_system_symmetric, V)
+        free_energies, pmfs = _use_symmetric(pulling_data, pmf_bin_edges, 1, symmetrize_pmf, V)
 
     elif which_estimator == "s2":
-        free_energies, pmfs = _use_symmetric(pulling_data, pmf_bin_edges, 2, is_system_symmetric, V)
+        free_energies, pmfs = _use_symmetric(pulling_data, pmf_bin_edges, 2, symmetrize_pmf, V)
 
     return free_energies, pmfs
 
