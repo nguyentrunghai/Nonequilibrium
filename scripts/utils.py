@@ -141,13 +141,25 @@ def equal_spaced_bins(list_of_data, nbins, symmetric_center=None):
         bin_edges   :   ndarray, float, shape = (nbins+1, )
     """
     assert isinstance(list_of_data, list), "list_of_data must be a list"
+    if symmetric_center is not None:
+        assert nbins % 2 == 0, "When symmetric_center is not None, nbins must be even"
 
-    min_x = np.min([data[:].min() for data in list_of_data])
-    max_x = np.max([data[:].max() for data in list_of_data])
-    std_x = np.min([data[:].std() for data in list_of_data])
+    mins = []
+    maxs = []
+    stds = []
 
-    lower = min_x - 0.00001 * std_x
-    upper = max_x + 0.00001 * std_x
+    for data in list_of_data:
+        load_data = data[:]
+        mins.append(load_data.min())
+        maxs.append(load_data.max())
+        stds.append(load_data.std())
+
+    min_x = np.min(mins)
+    max_x = np.max(maxs)
+    std_x = np.min(stds)
+
+    lower = min_x - 0.0000001 * std_x
+    upper = max_x + 0.0000001 * std_x
 
     if symmetric_center is not None:
         assert lower < symmetric_center < upper, "symmetric_center is not in between [min, max]"
@@ -174,6 +186,7 @@ def equal_sample_bins(list_of_data, nbins):
         bin_edges   :   ndarray, float, shape = (nbins+1, )
     """
     assert isinstance(list_of_data, list), "list_of_data must be a list"
+
     all_data = np.concatenate([data[:].ravel() for data in list_of_data])
     percents = np.linspace(0, 100., nbins + 1)
     bin_edges = np.percentile(all_data, percents)
@@ -183,3 +196,82 @@ def equal_sample_bins(list_of_data, nbins):
     bin_edges[0] = bin_edges[0] - 0.00001 * std_x
     bin_edges[-1] = bin_edges[-1] + 0.00001 * std_x
     return bin_edges
+
+
+def right_wrap(z, symm_center):
+    """
+    :param z: ndarray
+    :param symm_center: float
+    :return: z, ndarray
+    """
+    where_to_apply = (z > symm_center)
+    z[where_to_apply] = 2*symm_center - z[where_to_apply]
+    return z
+
+
+def left_wrap(z, symm_center):
+    """
+    :param z: ndarray
+    :param symm_center: float
+    :return: z, ndarray
+    """
+    where_to_apply = (z < symm_center)
+    z[where_to_apply] = 2*symm_center - z[where_to_apply]
+    return z
+
+
+def right_replicate_fe(first_half):
+    """
+    In : np.array([-5, -4, -3, -2, -1, 0])
+    Out: array([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5])
+    :param first_half:
+    :return:
+    """
+    center = first_half[-1]
+    second_half = 2*center - first_half[:-1]
+    second_half = second_half[::-1]
+    return np.hstack([first_half, second_half])
+
+
+def left_replicate_fe(first_half):
+    """
+    In : array([0, 1, 2, 3, 4, 5])
+    Out: array([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5])
+    :param first_half:
+    :return:
+    """
+    center = first_half[0]
+    second_half = 2*center - first_half[1:]
+    second_half = second_half[::-1]
+    return np.hstack([second_half, first_half])
+
+
+right_replicate_bin_edges = right_replicate_fe
+left_replicate_bin_edges = left_replicate_fe
+
+
+def right_replicate_pmf(first_half):
+    """
+    In : np.array([-5, -4, -3, -2, -1, 0])
+    Out: array([-5, -4, -3, -2, -1,  0,  0,  1,  2,  3,  4,  5])
+    :param first_half:
+    :return:
+    """
+    center = first_half[-1]
+    second_half = 2*center - first_half
+    second_half = second_half[::-1]
+    return np.hstack([first_half, second_half])
+
+
+def left_replicate_pmf(first_half):
+    """
+    In : array([0, 1, 2, 3, 4, 5])
+    Out: array([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5])
+    :param first_half:
+    :return:
+    """
+    center = first_half[0]
+    second_half = 2*center - first_half
+    second_half = second_half[::-1]
+    return np.hstack([second_half, first_half])
+
