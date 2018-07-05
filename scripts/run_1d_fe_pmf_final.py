@@ -8,6 +8,7 @@ import argparse
 import pickle
 
 import numpy as np
+import netCDF4 as nc
 
 from _IO import load_1d_sim_results
 
@@ -25,16 +26,19 @@ from _fe_pmf import pull_fe_pmf
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( "--pulling_data_nc_file",           type=str, default="1d_simulation_results_100repeats.nc")
+parser.add_argument( "--pulling_data_nc_file",           type=str,
+                     default="/home/tnguye46/nonequilibrium/1d/asym/simulation/m1.5_to_p1.5_backto_m1.5/work_500rep_1000traj.nc")
 
-parser.add_argument( "--other_pulling_data_nc_files",    type=str, default="")   # to determine pmf bin
-parser.add_argument( "--pmf_nbins",                      type=int, default=25)
+parser.add_argument( "--other_pulling_data_nc_files",    type=str,
+                     default="/home/tnguye46/nonequilibrium/1d/asym/simulation/m1.5_to_p1.5/work_500rep_1000traj.nc")   # to determine pmf bin
+
+parser.add_argument( "--pmf_nbins",                      type=int, default=24)
 
 parser.add_argument( "--system_type",    type=str,   default="asymmetric")       #  # symmetric or asymmetric
 # for symmetric systems, asymmetric protocol means pulling only one half of the pmf
-parser.add_argument( "--protocol_type",  type=str,   default="asymmetric")   # symmetric or asymmetric
+parser.add_argument( "--protocol_type",  type=str,   default="symmetric")   # symmetric or asymmetric
 
-parser.add_argument( "--symmetric_center",   type=float, default=-999)
+parser.add_argument( "--symmetric_center",   type=float, default=0) # some number or -999 (means None)
 
 # right wrap z around pmf_bin_symm_center,
 # if z > pmf_bin_symm_center, do this z = 2*pmf_bin_symm_center - z
@@ -44,7 +48,7 @@ parser.add_argument( "--right_wrap", action="store_true", default=False)
 # if z < pmf_bin_symm_center, do this z = 2*pmf_bin_symm_center - z
 parser.add_argument( "--left_wrap", action="store_true", default=False)
 
-parser.add_argument( "--estimators",  type=str, default="u b s1 s2")
+parser.add_argument( "--estimators",  type=str, default="uf ur b s1 s2")
 
 parser.add_argument( "--fe_out_prefix",   type=str, default="fe")
 parser.add_argument( "--pmf_out_prefix",  type=str, default="pmf")
@@ -53,16 +57,18 @@ args = parser.parse_args()
 
 assert args.system_type in ["symmetric", "asymmetric"], "unknown system_type"
 assert args.protocol_type in ["symmetric", "asymmetric"], "unknown protocol_type"
-assert !(args.right_wrap and left_wrap), "cannot be both right_wrap and left_wrap"
+assert not (args.right_wrap and left_wrap), "cannot be both right_wrap and left_wrap"
 
 
 print("pulling_data_nc_file", args.pulling_data_nc_file)
 print("other_pulling_data_nc_files", args.other_pulling_data_nc_files)
 print("pmf_nbins", args.pmf_nbins)
+
 print("estimators", args.estimators)
+
 print("system_type", args.system_type)
 print("protocol_type", args.protocol_type)
-print("pmf_bin_symm_center", args.pmf_bin_symm_center)
+
 print("right_wrap", args.right_wrap)
 print("left_wrap", args.left_wrap)
 
@@ -158,7 +164,7 @@ else:
 
 if args.system_type == "symmetric":
     assert symmetric_center is not None, "symmetric_center must be not None"
-
+print("symmetric_center", symmetric_center)
 
 pulling_data = load_1d_sim_results(args.pulling_data_nc_file)
 estimators = args.estimators.split()
@@ -186,9 +192,6 @@ exact_pmf = _exact_pmf(args.system_type, pmf_bin_edges)
 pickle.dump(num_free_energies, open(args.fe_out_prefix + "_numerical" + ".pkl", "w"))
 pickle.dump(exact_pmf, open(args.pmf_out_prefix + "_exact" + ".pkl", "w"))
 
-
-# TODO when system is symm and protocol is asymm, cut bin_edges into half
-
 # when both system and protocol are symmetric, use symmetrize_pmf=True, in the s1, s2 estimators
 if args.system_type == "symmetric" and args.protocol_type == "symmetric":
     symmetrize_pmf = True
@@ -205,15 +208,18 @@ for estimator in estimators:
         if args.right_wrap:
             half_pmf_bin_edges = pmf_bin_edges[ : args.pmf_nbins/2 + 1 ]
         elif args.left_wrap:
-            half_pmf_bin_edges = pmf_bin_edges[args.pmf_nbins / 2 : ]
+            half_pmf_bin_edges = pmf_bin_edges[args.pmf_nbins/2 : ]
         print("half_pmf_bin_edges", half_pmf_bin_edges)
 
         fes, ps = pull_fe_pmf(estimator, pulling_data, half_pmf_bin_edges, symmetrize_pmf, V)
 
+        print("replicat final results")
         if args.right_wrap:
             _replicate_fe(fes, "right")
+            _replicate_pmf(ps, "right")
         else:
             _replicate_fe(fes, "left")
+            _replicate_pmf(ps, "left")
 
     else:
         fes, ps = pull_fe_pmf(estimator, pulling_data, pmf_bin_edges, symmetrize_pmf, V)
