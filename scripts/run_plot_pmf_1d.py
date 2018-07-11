@@ -99,15 +99,14 @@ assert os.path.exists(args.reference_file_asym), args.reference_file_asym + " do
 
 
 data_estimator_pairs = args.data_estimator_pairs.split()
-assert len(data_files) == len(data_estimator_pairs), "data_files and data_estimator_pairs must have the same len"
-
 for data_estimator_pair, data_file in zip(data_estimator_pairs, data_files):
     print(data_estimator_pair, ": ", data_file)
 print("reference_file_sym: " + args.reference_file_sym)
 print("reference_file_asym: " + args.reference_file_asym)
 
-loaded_data = [pickle.load(open(f, "r")) for f in data_files]
+assert len(data_files) == len(data_estimator_pairs), "data_files and data_estimator_pairs must have the same len"
 
+loaded_data = [pickle.load(open(f, "r")) for f in data_files]
 
 # plot pmf
 xs = []
@@ -145,23 +144,24 @@ plot_lines(xs, ys, yerrs=yerrs,
            xlimits=xlimits,
            ylimits=ylimits_pmf,
            lw=1.0,
-           markersize=5,
-           alpha=0.5,
+           markersize=4,
+           alpha=1.,
            n_xtics=8,
            n_ytics=8)
-
-stop
 
 
 # plot RMSE
 xs = []
 ys = []
+for data, data_estimator_pair in zip(loaded_data, data_estimator_pairs):
+    xs.append(bin_centers(data["pmf_bin_edges"]))
+    pmfs = data["pmfs"].values()
 
-
-xs = [bin_centers(est_pmfs[est]["pmf_bin_edges"][1:-1]) for est in estimators]
-
-ys = [_rmse(est_pmfs[est]["pmfs"], exact_pmf) for est in estimators]
-ys = [y[1:-1] for y in ys]
+    if data_estimator_pair.split("-")[0] == "s":
+        y = _rmse(pmfs, ref_pmf_sym)
+    else:
+        y = _rmse(pmfs, ref_pmf_asym)
+    ys.append(y)
 
 if args.ylimits_rmse.lower() != "none":
     ylimits_rmse = [float(s) for s in args.ylimits_rmse.split()]
@@ -169,18 +169,19 @@ else:
     ylimits_rmse = None
 print("ylimits_rmse = ", ylimits_rmse)
 
+legends = data_estimator_pairs
 plot_lines(xs, ys,
            xlabel=args.xlabel, ylabel=args.ylabel_rmse,
            out=args.rmse_out,
-           legends=estimators,
+           legends=legends,
            markers=MARKERS,
            legend_pos="best",
            legend_fontsize=7,
            xlimits=xlimits,
            ylimits=ylimits_rmse,
            lw=1.0,
-           markersize=5,
-           alpha=0.5,
+           markersize=4,
+           alpha=1.,
            n_xtics=8,
            n_ytics=8)
 
