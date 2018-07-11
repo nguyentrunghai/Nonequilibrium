@@ -14,13 +14,14 @@ from utils import bin_centers
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--pmf_dir", type=str,
-                    default="fe_pmf")
+parser.add_argument("--data_files", type=str,
+                    default="../m1.5_to_p1.5_backto_m1.5/pmf_uf.pkl  ../m1.5_to_p1.5_backto_m1.5/pmf_b.pkl ../m1.5_to_p1.5_backto_m1.5/pmf_s1.pkl "\
+                    + "../m1.5_to_p1.5/pmf_uf.pkl ../m1.5_to_p1.5/pmf_ur.pkl ../m1.5_to_p1.5/pmf_b.pkl" )
 
-parser.add_argument("--estimators", type=str, default="u b s1 s2")
+parser.add_argument("--data_estimator_pairs", type=str, default="s-u s-b s-s f-u r-u fr-b")
 
-parser.add_argument("--exact_pmf_file", type=str,
-                    default="/home/tnguye46/nonequilibrium/1d/sym/fe_pmf/1000repeats/pmf_exact.pkl")
+parser.add_argument("--reference_file_sym", type=str, default="../m1.5_to_p1.5_backto_m1.5/pmf_exact.pkl")
+parser.add_argument("--reference_file_asym", type=str, default="../m1.5_to_p1.5/pmf_exact.pkl")
 
 parser.add_argument("--xlimits", type=str, default="None")
 parser.add_argument("--ylimits_pmf", type=str, default="None")
@@ -37,7 +38,7 @@ args = parser.parse_args()
 
 PMF_FILE_PREFIX = "pmf_"
 
-MARKERS = ["<", ">", "^", "v", "o"]
+MARKERS = ["<", ">", "^", "v", "s", "d", None]
 
 
 def _match_min(to_be_transformed, target):
@@ -55,6 +56,10 @@ def _match_min(to_be_transformed, target):
     return transformed
 
 
+def _shift_min_to_zero(array):
+    return array - array.min()
+
+
 def _rmse(list_of_est_val, true_val):
     """
     """
@@ -63,8 +68,9 @@ def _rmse(list_of_est_val, true_val):
     for est_val in list_of_est_val:
         assert est_val.shape == true_val.shape, "one of est_val has different shape than true_val"
 
+    true_val = _shift_min_to_zero(true_val)
     for i in range(len(list_of_est_val)):
-        list_of_est_val[i] = _match_min(list_of_est_val[i], true_val)
+        list_of_est_val[i] = _shift_min_to_zero(list_of_est_val[i])
 
     list_of_est_val = np.array(list_of_est_val)
 
@@ -76,30 +82,44 @@ def _rmse(list_of_est_val, true_val):
     return rmse
 
 
-exact_pmf = pickle.load(open(args.exact_pmf_file, "r"))
-pmf_bin_edges = exact_pmf["pmf_bin_edges"]
-exact_pmf = exact_pmf["pmfs"]
+ref_pmf_sym = pickle.load(open(args.reference_file_sym, "r"))
+bin_edges_sym = ref_pmf_sym["pmf_bin_edges"]
+ref_pmf_sym = ref_pmf_sym["pmfs"]
 
-estimators = args.estimators.split()
-est_pmf_files = {est : os.path.join(args.pmf_dir, PMF_FILE_PREFIX + est + ".pkl") for est in estimators}
-for f in est_pmf_files.values():
+ref_pmf_asym = pickle.load(open(args.reference_file_asym, "r"))
+bin_edges_asym = ref_pmf_asym["pmf_bin_edges"]
+ref_pmf_asym = ref_pmf_asym["pmfs"]
+
+data_files = args.data_files.split()
+for f in data_files:
     assert os.path.exists(f), f + " does not exist."
 
-est_pmfs = {est : pickle.load( open(est_pmf_files[est]) ) for est in estimators}
+assert os.path.exists(args.reference_file_sym), args.reference_file_sym + " does not exist."
+assert os.path.exists(args.reference_file_asym), args.reference_file_asym + " does not exist."
 
-for est in estimators:
-    est_pmfs[est]["pmfs"] = est_pmfs[est]["pmfs"].values()
-    est_pmfs[est]["mean"] = _match_min(est_pmfs[est]["mean"], exact_pmf)
+
+data_estimator_pairs = args.data_estimator_pairs.split()
+assert len(data_files) == len(data_estimator_pairs), "data_files and data_estimator_pairs must have the same len"
+
+for data_estimator_pair, data_file in zip(data_estimator_pairs, data_files):
+    print(data_estimator_pair, ": ", data_file)
+print("reference_file_sym: " + args.reference_file_sym)
+print("reference_file_asym: " + args.reference_file_asym)
+
+loaded_data = [pickle.load(open(f, "r")) for f in data_files]
+
 
 # plot pmf
-xs = [bin_centers(est_pmfs[est]["pmf_bin_edges"][1:-1]) for est in estimators]
-xs.append(bin_centers(pmf_bin_edges[1:-1]))
+xs = []
+ys = []
+yerrs = []
+for data, data_estimator_pair in zip(loaded_data, data_estimator_pairs):
+    xs.append( bin_centers(data["pmf_bin_edges"]) )
+    ys.append( _shift_min_to_zero(data["mean"]) )
+    yerrs.append(data["std"] / 2. )
 
-ys = [est_pmfs[est]["mean"][1:-1] for est in estimators]
-ys.append(exact_pmf[1:-1])
-
-yerrs = [est_pmfs[est]["std"][1:-1] for est in estimators]
-yerrs = [yerr/2. for yerr in yerrs] # 1 std
+xs.append( bin_centers(bin_edges_sym) )
+ys.append( _shift_min_to_zero(ref_pmf_sym) )
 yerrs.append(None)
 
 if args.xlimits.lower() != "none":
@@ -114,13 +134,14 @@ else:
     ylimits_pmf = None
 print("ylimits_pmf = ", ylimits_pmf)
 
+legends = data_estimator_pairs + ["exact"]
 plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.xlabel, ylabel=args.ylabel_pmf,
            out=args.pmf_out,
-           legends=estimators + ["exact"],
+           legends=legends,
            markers=MARKERS,
            legend_pos="best",
-           legend_fontsize=8,
+           legend_fontsize=7,
            xlimits=xlimits,
            ylimits=ylimits_pmf,
            lw=1.0,
@@ -129,9 +150,14 @@ plot_lines(xs, ys, yerrs=yerrs,
            n_xtics=8,
            n_ytics=8)
 
+stop
 
 
 # plot RMSE
+xs = []
+ys = []
+
+
 xs = [bin_centers(est_pmfs[est]["pmf_bin_edges"][1:-1]) for est in estimators]
 
 ys = [_rmse(est_pmfs[est]["pmfs"], exact_pmf) for est in estimators]
@@ -149,7 +175,7 @@ plot_lines(xs, ys,
            legends=estimators,
            markers=MARKERS,
            legend_pos="best",
-           legend_fontsize=8,
+           legend_fontsize=7,
            xlimits=xlimits,
            ylimits=ylimits_rmse,
            lw=1.0,
