@@ -13,32 +13,33 @@ from _plots import plot_lines
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--fe_dir", type=str,
-                    default="fe_pmf")
+parser.add_argument("--data_files", type=str,
+                    default="../m1.5_to_p1.5_backto_m1.5/fe_uf.pkl  ../m1.5_to_p1.5_backto_m1.5/fe_b.pkl ../m1.5_to_p1.5_backto_m1.5/fe_s1.pkl "\
+                    + "../m1.5_to_p1.5/fe_uf.pkl ../m1.5_to_p1.5/fe_ur.pkl ../m1.5_to_p1.5/fe_b.pkl" )
 
-parser.add_argument("--estimators", type=str, default="u b s1 s2")
+parser.add_argument("--data_estimator_pairs", type=str, default="s-u s-b s-s f-u r-u fr-b")
 
-parser.add_argument("--num_fe_file", type=str,
-                    default="fe_numerical.pkl")
+parser.add_argument("--reference_file_sym", type=str, default="../m1.5_to_p1.5_backto_m1.5/fe_numerical.pkl")
+parser.add_argument("--reference_file_asym", type=str, default="../m1.5_to_p1.5/fe_numerical.pkl")
 
-parser.add_argument("--nsamples", type=int, default=20)
+parser.add_argument("--nsamples_sym", type=int, default=19)
+parser.add_argument("--nsamples_asym", type=int, default=10)
 
 parser.add_argument("--xlimits", type=str, default="None")
 parser.add_argument("--ylimits_fe", type=str, default="None")
 parser.add_argument("--ylimits_rmse", type=str, default="None")
 
-parser.add_argument("--xlabel", type=str, default="$t$")
-parser.add_argument("--ylabel_fe", type=str, default="$\Delta F_t$")
-parser.add_argument("--ylabel_rmse", type=str, default="RMSE[$\Delta F_t$]")
+parser.add_argument("--xlabel", type=str, default="$\lambda$")
+parser.add_argument("--ylabel_fe", type=str, default="$\Delta F_{\lambda}$")
+parser.add_argument("--ylabel_rmse", type=str, default="RMSE[$\Delta F_{\lambda}$]")
 
 parser.add_argument("--fe_out", type=str, default="fe.pdf")
 parser.add_argument("--rmse_out", type=str, default="fe_rmse.pdf")
 
 args = parser.parse_args()
 
-FE_FILE_PREFIX = "fe_"
 
-MARKERS = ["<", ">", "^", "v", "o"]
+MARKERS = ["<", ">", "^", "v", "s", "d", None]
 
 
 def _match_min(to_be_transformed, target):
@@ -83,31 +84,58 @@ def equal_stride_subsample(data, nsamples):
     return data[new_index]
 
 
-num_fe = pickle.load(open(args.num_fe_file, "r"))
-pulling_times = num_fe["pulling_times"]
-num_fe = num_fe["fes"]
+ref_fe_sym = pickle.load( open(args.reference_file_sym, "r") )
+lambda_sym = ref_fe_sym["lambdas"]
+ref_fe_sym = ref_fe_sym["fes"]
 
-estimators = args.estimators.split()
-est_fe_files = {est : os.path.join(args.fe_dir, FE_FILE_PREFIX + est + ".pkl") for est in estimators}
-for f in est_fe_files.values():
+ref_fe_asym = pickle.load( open(args.reference_file_asym, "r") )
+lambda_asym = ref_fe_asym["lambdas"]
+ref_fe_asym = ref_fe_asym["fes"]
+
+
+data_files = args.data_files.split()
+for f in data_files:
     assert os.path.exists(f), f + " does not exist."
 
-est_fes = {est : pickle.load( open(est_fe_files[est]) ) for est in estimators}
+assert os.path.exists(args.reference_file_sym), args.reference_file_sym + " does not exist."
+assert os.path.exists(args.reference_file_asym), args.reference_file_asym + " does not exist."
 
-for est in estimators:
-    est_fes[est]["fes"] = est_fes[est]["fes"].values()
-    est_fes[est]["mean"] = _match_min(est_fes[est]["mean"], num_fe)
 
+data_estimator_pairs = args.data_estimator_pairs.split()
+assert len(data_files) == len(data_estimator_pairs), "data_files and data_estimator_pairs must have the same len"
+
+for data_estimator_pair, data_file in zip(data_estimator_pairs, data_files):
+    print(data_estimator_pair, ": ", data_file)
+print("reference_file_sym: " + args.reference_file_sym)
+print("reference_file_asym: " + args.reference_file_asym)
+
+loaded_data = [pickle.load(open(f, "r")) for f in data_files]
 
 # plot fe
-xs = [equal_stride_subsample(pulling_times, args.nsamples) for _ in estimators]
-xs.append(equal_stride_subsample(pulling_times, args.nsamples))
+xs = []
+ys = []
+yerrs = []
+for data, data_estimator_pair in zip(loaded_data, data_estimator_pairs):
+    if data_estimator_pair.split("-")[0] == "s":
+        x = equal_stride_subsample(data["lambdas"], args.nsamples_sym)
+        y = equal_stride_subsample(data["mean"], args.nsamples_sym)
+        yerr = equal_stride_subsample(data["std"], args.nsamples_sym)
+    else:
+        x = equal_stride_subsample(data["lambdas"], args.nsamples_asym)
+        y = equal_stride_subsample(data["mean"], args.nsamples_asym)
+        yerr = equal_stride_subsample(data["std"], args.nsamples_asym)
 
-ys = [equal_stride_subsample(est_fes[est]["mean"], args.nsamples) for est in estimators]
-ys.append(equal_stride_subsample(num_fe, args.nsamples))
+    if data_estimator_pair == "r-u":
+        shift = ref_fe_asym[-1] - y[0]
+        y += shift
 
-yerrs = [equal_stride_subsample(est_fes[est]["std"], args.nsamples) for est in estimators]
-yerrs = [yerr/2. for yerr in yerrs] # 1 std
+    xs.append(x)
+    ys.append(y)
+    yerrs.append(yerr/2)  # error bars are one std
+
+
+xs.append( equal_stride_subsample(lambda_sym, args.nsamples_sym) )
+ys.append( equal_stride_subsample(ref_fe_sym, args.nsamples_sym) )
 yerrs.append(None)
 
 if args.xlimits.lower() != "none":
@@ -122,13 +150,14 @@ else:
     ylimits_fe = None
 print("ylimits_fe = ", ylimits_fe)
 
+legends = data_estimator_pairs + ["num"]
 plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.xlabel, ylabel=args.ylabel_fe,
            out=args.fe_out,
-           legends=estimators + ["num"],
+           legends=legends,
            markers=MARKERS,
            legend_pos="best",
-           legend_fontsize=8,
+           legend_fontsize=7,
            xlimits=xlimits,
            ylimits=ylimits_fe,
            lw=1.0,
@@ -139,10 +168,27 @@ plot_lines(xs, ys, yerrs=yerrs,
 
 
 # plot RMSE
-xs = [equal_stride_subsample(pulling_times, args.nsamples) for _ in estimators]
+xs = []
+ys = []
+for data, data_estimator_pair in zip(loaded_data, data_estimator_pairs):
+    fes = data["fes"].values()
 
-ys = [_rmse(est_fes[est]["fes"], num_fe) for est in estimators]
-ys = [equal_stride_subsample(y, args.nsamples) for y in ys]
+    if data_estimator_pair == "r-u":
+        for i in range(len(fes)):
+            fes[i] = fes[i][::-1]
+
+    if data_estimator_pair.split("-")[0] == "s":
+        x = equal_stride_subsample(data["lambdas"], args.nsamples_sym)
+        y = _rmse(fes, ref_fe_sym)
+        y = equal_stride_subsample(y, args.nsamples_sym)
+    else:
+        x = equal_stride_subsample(data["lambdas"], args.nsamples_asym)
+        y = _rmse(fes, ref_fe_asym)
+        y = equal_stride_subsample(y, args.nsamples_asym)
+
+    xs.append(x)
+    ys.append(y)
+
 
 if args.ylimits_rmse.lower() != "none":
     ylimits_rmse = [float(s) for s in args.ylimits_rmse.split()]
@@ -150,13 +196,15 @@ else:
     ylimits_rmse = None
 print("ylimits_rmse = ", ylimits_rmse)
 
+legends = data_estimator_pairs
+
 plot_lines(xs, ys,
            xlabel=args.xlabel, ylabel=args.ylabel_rmse,
            out=args.rmse_out,
-           legends=estimators,
+           legends=legends,
            markers=MARKERS,
            legend_pos="best",
-           legend_fontsize=8,
+           legend_fontsize=7,
            xlimits=xlimits,
            ylimits=ylimits_rmse,
            lw=1.0,
