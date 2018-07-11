@@ -13,14 +13,12 @@ from _plots import plot_lines
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--data_files", type=str,
-                    default="../m1.5_to_p1.5_backto_m1.5/fe_uf.pkl  ../m1.5_to_p1.5_backto_m1.5/fe_b.pkl ../m1.5_to_p1.5_backto_m1.5/fe_s1.pkl "\
-                    + "../m1.5_to_p1.5/fe_uf.pkl ../m1.5_to_p1.5/fe_ur.pkl ../m1.5_to_p1.5/fe_b.pkl" )
+parser.add_argument("--data_files", type=str, default="file1.pkl file2.pkl" )
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s-u s-b s-s f-u r-u fr-b")
 
-parser.add_argument("--reference_file_sym", type=str, default="../m1.5_to_p1.5_backto_m1.5/fe_numerical.pkl")
-parser.add_argument("--reference_file_asym", type=str, default="../m1.5_to_p1.5/fe_numerical.pkl")
+parser.add_argument("--reference_file_sym", type=str, default="fe_numerical.pkl")
+parser.add_argument("--reference_file_asym", type=str, default="fe_numerical.pkl")
 
 parser.add_argument("--nsamples_sym", type=int, default=19)
 parser.add_argument("--nsamples_asym", type=int, default=10)
@@ -39,7 +37,7 @@ parser.add_argument("--rmse_out", type=str, default="fe_rmse.pdf")
 args = parser.parse_args()
 
 
-MARKERS = ["<", ">", "^", "v", "s", "d", None]
+MARKERS = ["<", ">", "^", "v", "s", "d", "."]
 
 
 def _match_min(to_be_transformed, target):
@@ -102,12 +100,13 @@ assert os.path.exists(args.reference_file_asym), args.reference_file_asym + " do
 
 
 data_estimator_pairs = args.data_estimator_pairs.split()
-assert len(data_files) == len(data_estimator_pairs), "data_files and data_estimator_pairs must have the same len"
-
 for data_estimator_pair, data_file in zip(data_estimator_pairs, data_files):
     print(data_estimator_pair, ": ", data_file)
 print("reference_file_sym: " + args.reference_file_sym)
 print("reference_file_asym: " + args.reference_file_asym)
+
+assert len(data_files) == len(data_estimator_pairs), "data_files and data_estimator_pairs must have the same len"
+
 
 loaded_data = [pickle.load(open(f, "r")) for f in data_files]
 
@@ -161,8 +160,8 @@ plot_lines(xs, ys, yerrs=yerrs,
            xlimits=xlimits,
            ylimits=ylimits_fe,
            lw=1.0,
-           markersize=5,
-           alpha=0.5,
+           markersize=4,
+           alpha=1.,
            n_xtics=8,
            n_ytics=8)
 
@@ -208,8 +207,8 @@ plot_lines(xs, ys,
            xlimits=xlimits,
            ylimits=ylimits_rmse,
            lw=1.0,
-           markersize=5,
-           alpha=0.5,
+           markersize=4,
+           alpha=1.,
            n_xtics=8,
            n_ytics=8)
 
