@@ -15,7 +15,7 @@ from _IO import save_to_nc
 parser = argparse.ArgumentParser()
 
 parser.add_argument( "--system_type",    type=str,   default="asymmetric")   # symmetric or asymmetric
-parser.add_argument( "--protocol_type",  type=str,   default="asymmetric")   # symmetric or asymmetric
+parser.add_argument( "--whether_symmetrize_protocol",  action="store_true", default=False)
 
 parser.add_argument( "--repeats",               type=int,   default=10)
 parser.add_argument( "--trajs_per_repeat",      type=int,   default=1000)
@@ -35,8 +35,6 @@ args = parser.parse_args()
 
 
 assert args.system_type in ["symmetric", "asymmetric"], "unknown system_type"
-assert args.protocol_type in ["symmetric", "asymmetric"], "unknown protocol_type"
-
 
 if args.system_type == "symmetric":
     from models_1d import U_sym as U
@@ -50,7 +48,7 @@ elif args.system_type == "asymmetric":
 lambda_F = np.linspace(args.initital_lambda, args.final_lambda,      args.steps_per_trajectory)
 lambda_R = np.linspace(args.final_lambda,    args.initital_lambda,   args.steps_per_trajectory)
 
-if args.protocol_type == "symmetric":
+if args.whether_symmetrize_protocol:
     lambda_F = symmetrize_lambda(lambda_F)
     lambda_R = lambda_F
 

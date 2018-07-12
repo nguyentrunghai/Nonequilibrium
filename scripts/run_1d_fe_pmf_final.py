@@ -57,8 +57,10 @@ args = parser.parse_args()
 
 assert args.system_type in ["symmetric", "asymmetric"], "unknown system_type"
 assert args.protocol_type in ["symmetric", "asymmetric"], "unknown protocol_type"
-assert not (args.right_wrap and left_wrap), "cannot be both right_wrap and left_wrap"
-
+print("right_wrap: ", args.right_wrap)
+print("left_wrap: ", args.left_wrap)
+if args.right_wrap and args.left_wrap:
+    raise Exception("cannot be both right_wrap and left_wrap")
 
 print("pulling_data_nc_file", args.pulling_data_nc_file)
 print("other_pulling_data_nc_files", args.other_pulling_data_nc_files)
@@ -205,19 +207,25 @@ for estimator in estimators:
 
     if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
 
+        if (not args.right_wrap) and (not args.left_wrap):
+            raise Exception("you should choose one of the wraps")
+
         if args.right_wrap:
-            half_pmf_bin_edges = pmf_bin_edges[ : args.pmf_nbins/2 + 1 ]
+            use_pmf_bin_edges = pmf_bin_edges[ : args.pmf_nbins/2 + 1 ]
+
         elif args.left_wrap:
-            half_pmf_bin_edges = pmf_bin_edges[args.pmf_nbins/2 : ]
-        print("half_pmf_bin_edges", half_pmf_bin_edges)
+            use_pmf_bin_edges = pmf_bin_edges[args.pmf_nbins/2 : ]
 
-        fes, ps = pull_fe_pmf(estimator, pulling_data, half_pmf_bin_edges, symmetrize_pmf, V)
+        print("use_pmf_bin_edges", use_pmf_bin_edges)
 
-        print("replicat final results")
+        fes, ps = pull_fe_pmf(estimator, pulling_data, use_pmf_bin_edges, symmetrize_pmf, V)
+
         if args.right_wrap:
+            print("right replicate final results")
             _replicate_fe(fes, "right")
             _replicate_pmf(ps, "right")
         else:
+            print("left replicate final results")
             _replicate_fe(fes, "left")
             _replicate_pmf(ps, "left")
 
