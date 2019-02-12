@@ -26,16 +26,24 @@ parser.add_argument( "--repeats",               type=int,   default=10)
 # number of trajectories per repeat
 parser.add_argument( "--trajs_per_repeat",      type=int,   default=1000)
 
+# number of simulation steps per trajectory
 parser.add_argument( "--steps_per_trajectory",              type=int,   default=750)
+# number of steps to be discarded before collecting data
 parser.add_argument( "--equilibration_steps",               type=int,   default=250)
 
+# time step
 parser.add_argument( "--dt",                                type=float, default=0.001)
+# harmonic force constant
 parser.add_argument( "--ks",                                type=float, default=15.)
+# initial value of the protocol parameter lambda
 parser.add_argument( "--initital_lambda",                   type=float, default=-1.5)
+# final value of the protocol parameter lambda
+# note that if --whether_symmetrize_protocol is used, the values of lambda will go
+# from initital_lambda to final_lambda and back to initital_lambda
 parser.add_argument( "--final_lambda",                      type=float, default=1.5)
 
+# name of netcdf file to store the output data
 parser.add_argument( "--out",                       type=str,   default="work.nc")
-
 
 args = parser.parse_args()
 
