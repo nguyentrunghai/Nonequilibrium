@@ -14,7 +14,11 @@ from _IO import save_to_nc
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( "--system_type",    type=str,   default="asymmetric")   # symmetric or asymmetric
+# symmetric or asymmetric
+parser.add_argument( "--system_type",    type=str,   default="asymmetric")
+
+# for asymmetric systems, this option will make the protocol symmetric
+# by reversing the motion of lambda back to the initial position
 parser.add_argument( "--whether_symmetrize_protocol",  action="store_true", default=False)
 
 parser.add_argument( "--repeats",               type=int,   default=10)
