@@ -21,7 +21,9 @@ parser.add_argument( "--system_type",    type=str,   default="asymmetric")
 # by reversing the motion of lambda back to the initial position
 parser.add_argument( "--whether_symmetrize_protocol",  action="store_true", default=False)
 
+# number of repeats
 parser.add_argument( "--repeats",               type=int,   default=10)
+# number of trajectories per repeat
 parser.add_argument( "--trajs_per_repeat",      type=int,   default=1000)
 
 parser.add_argument( "--steps_per_trajectory",              type=int,   default=750)
