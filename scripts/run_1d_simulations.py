@@ -27,7 +27,9 @@ parser.add_argument( "--repeats",               type=int,   default=10)
 parser.add_argument( "--trajs_per_repeat",      type=int,   default=1000)
 
 # number of simulation steps per trajectory
-parser.add_argument( "--steps_per_trajectory",              type=int,   default=750)
+# this should be chosen carefully such that the middle value to be exactly
+# (initital_lambda + final_lambda) / 2
+parser.add_argument( "--steps_per_trajectory",              type=int,   default=751)
 # number of steps to be discarded before collecting data
 parser.add_argument( "--equilibration_steps",               type=int,   default=250)
 
