@@ -72,15 +72,13 @@ def time_reversal_of_trajectory(z_t):
 
 def hist_counts(data, bin_edges, weights):
     """
-    data :   ndarray with shape (N, number_of_steps)
+    :param data:    ndarray with shape (N, number_of_steps)
 
-    bin_edges : ndarray of shape ( nbins+1 )
+    :param bin_edges:   ndarray of shape ( nbins+1 )
 
-    weights     :   ndarray of shape (N, number_of_steps), unnormalized weights
+    :param weights: ndarray of shape (N, number_of_steps), unnormalized weights
 
-    -------------------
-    return  :
-                histograms   :   np.array of shape (number_of_steps, nbins)
+    :return: histograms, np.array of shape (number_of_steps, nbins)
     """
     assert data.ndim == 2, "data must be 2d array"
     assert weights.ndim == 2, "weights must be 2d array"
@@ -107,13 +105,13 @@ def center_reflection(value, center):
 
 def get_bin_indexes(data, bin_edges):
     """
-    data    :   ndarray, float, any shape
+    :param data:    ndarray, float, any shape
 
-    bin_edges   : ndarray, float, shape (nbins+1), the bin edges
+    :param bin_edges: ndarray, float, shape (nbins+1), the bin edges
 
-    return:
-        bin_indexes :   ndarray, int, same shape as data
-        bin_edges   :   ndarray, float, shape = (nbins+1, )
+    :return: (bin_indexes, _bin_edges)
+        bin_indexes : ndarray, int, same shape as data
+        _bin_edges : ndarray, float, shape = (nbins+1, )
     """
     assert isinstance(bin_edges, np.ndarray), "bin_edges must be a ndarray"
 
@@ -125,13 +123,12 @@ def get_bin_indexes(data, bin_edges):
 
 def equal_spaced_bins(list_of_data, nbins, symmetric_center=None):
     """
-    list_of_data    :   list of np.ndarray or nc._netCDF4.Variable
-    nbins   :   int, number of bins
+    :param list_of_data: list of np.ndarray or nc._netCDF4.Variable
+    :param nbins:   int, number of bins
 
-    symmetric_center    : None or float
+    :param symmetric_center: None or float
 
-    return:
-        bin_edges   :   ndarray, float, shape = (nbins+1, )
+    :return: bin_edges, ndarray, float, shape = (nbins+1, )
     """
     assert isinstance(list_of_data, list), "list_of_data must be a list"
     if symmetric_center is not None:
