@@ -1,5 +1,6 @@
 """
-estimate free energy differences and PMF using unidirectional estimator for pulling simulation data
+estimate free energy differences and PMF using unidirectional estimator
+for pulling simulation data
 """
 
 from __future__ import print_function
