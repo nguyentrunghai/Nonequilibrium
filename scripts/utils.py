@@ -133,6 +133,7 @@ def equal_spaced_bins(list_of_data, nbins, symmetric_center=None):
     assert isinstance(list_of_data, list), "list_of_data must be a list"
     if symmetric_center is not None:
         assert nbins % 2 == 0, "When symmetric_center is not None, nbins must be even"
+        # which mean that the symmetric center is the bin edge right in the middle
 
     mins = []
     maxs = []
@@ -169,11 +170,10 @@ def equal_spaced_bins(list_of_data, nbins, symmetric_center=None):
 
 def equal_sample_bins(list_of_data, nbins):
     """
-    list_of_data    :   list of np.ndarray or nc._netCDF4.Variable
-    nbins   :   int, number of bins
+    :param list_of_data: list of np.ndarray or nc._netCDF4.Variable
+    :param nbins: int, number of bins
 
-    return:
-        bin_edges   :   ndarray, float, shape = (nbins+1, )
+    :return: bin_edges, ndarray, float, shape = (nbins+1, )
     """
     assert isinstance(list_of_data, list), "list_of_data must be a list"
 
