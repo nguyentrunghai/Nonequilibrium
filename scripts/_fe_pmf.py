@@ -12,6 +12,12 @@ from estimators import sym_est_df_t_v2, sym_est_pmf_v2
 
 def _use_unidirectional(pulling_data, pmf_bin_edges, V, which_data):
     """
+    :param pulling_data: dict returned by _IO.load_1d_sim_results()
+    :param pmf_bin_edges: ndarray
+    :param V: harmonic potential function
+    :param which_data:  list of str
+
+    :return: (free_energies, pmfs), both are dict
     """
     print("use unidirectional estimators")
     assert which_data in ["f", "r"], "unknown which_data"
@@ -65,6 +71,10 @@ def _use_unidirectional(pulling_data, pmf_bin_edges, V, which_data):
 
 def _use_bidirectional(pulling_data, pmf_bin_edges, V):
     """
+    :param pulling_data: dict returned by _IO.load_1d_sim_results()
+    :param pmf_bin_edges: ndarray
+    :param V: harmonic potential function
+    :return: list of str
     """
     print("use bidirectional estimators")
 
