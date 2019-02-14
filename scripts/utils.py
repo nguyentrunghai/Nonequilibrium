@@ -192,11 +192,12 @@ def right_wrap(z, symm_center):
     """
     :param z: ndarray
     :param symm_center: float
-    :return: z, ndarray
+    :return: new_z, ndarray
     """
-    where_to_apply = (z > symm_center)
-    z[where_to_apply] = 2*symm_center - z[where_to_apply]
-    return z
+    new_z = np.copy(z)
+    where_to_apply = (new_z > symm_center)
+    new_z[where_to_apply] = 2*symm_center - new_z[where_to_apply]
+    return new_z
 
 
 def left_wrap(z, symm_center):
@@ -205,9 +206,10 @@ def left_wrap(z, symm_center):
     :param symm_center: float
     :return: z, ndarray
     """
-    where_to_apply = (z < symm_center)
-    z[where_to_apply] = 2*symm_center - z[where_to_apply]
-    return z
+    new_z = np.copy(z)
+    where_to_apply = (new_z < symm_center)
+    new_z[where_to_apply] = 2*symm_center - new_z[where_to_apply]
+    return new_z
 
 
 def right_replicate_fe(first_half):
