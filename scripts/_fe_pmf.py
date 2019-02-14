@@ -74,7 +74,7 @@ def _use_bidirectional(pulling_data, pmf_bin_edges, V):
     :param pulling_data: dict returned by _IO.load_1d_sim_results()
     :param pmf_bin_edges: ndarray
     :param V: harmonic potential function
-    :return: list of str
+    :return: (free_energies, pmfs), both are dict
     """
     print("use bidirectional estimators")
 
@@ -128,8 +128,12 @@ def _use_bidirectional(pulling_data, pmf_bin_edges, V):
 
 def _use_symmetric(pulling_data, pmf_bin_edges, version, symmetrize_pmf, V):
     """
-    version :   int, either 1 or 2
-    is_system_symmetric :   bool,
+    :param pulling_data: dict returned by _IO.load_1d_sim_results()
+    :param pmf_bin_edges: ndarray
+    :param version: 1 or 2
+    :param symmetrize_pmf: bool
+    :param V: harmonic potential function
+    :return: (free_energies, pmfs), both are dict
     """
     assert version in [1, 2], "version must be either 1 or 2"
 
