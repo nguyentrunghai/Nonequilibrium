@@ -26,19 +26,22 @@ from _fe_pmf import pull_fe_pmf
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( "--pulling_data_nc_file",           type=str,
-                     default="/home/tnguye46/nonequilibrium/1d/asym/simulation/m1.5_to_p1.5_backto_m1.5/work_500rep_1000traj.nc")
+parser.add_argument( "--pulling_data_nc_file",  type=str, default="work_500rep_1000traj.nc")
 
-parser.add_argument( "--other_pulling_data_nc_files",    type=str,
-                     default="/home/tnguye46/nonequilibrium/1d/asym/simulation/m1.5_to_p1.5/work_500rep_1000traj.nc")   # to determine pmf bin
+# to determine pmf bin
+parser.add_argument( "--other_pulling_data_nc_files", type=str, default="work_500rep_1000traj.nc")
 
-parser.add_argument( "--pmf_nbins",                      type=int, default=24)
+parser.add_argument( "--pmf_nbins", type=int, default=24)
 
-parser.add_argument( "--system_type",    type=str,   default="asymmetric")       #  # symmetric or asymmetric
+# symmetric or asymmetric
+parser.add_argument( "--system_type",    type=str,   default="asymmetric")
+
 # for symmetric systems, asymmetric protocol means pulling only one half of the pmf
-parser.add_argument( "--protocol_type",  type=str,   default="symmetric")   # symmetric or asymmetric
+# symmetric or asymmetric
+parser.add_argument( "--protocol_type",  type=str,   default="symmetric")
 
-parser.add_argument( "--symmetric_center",   type=float, default=0) # some number or -999 (means None)
+# some number or -999 (means None)
+parser.add_argument( "--symmetric_center",   type=float, default=0)
 
 # right wrap z around pmf_bin_symm_center,
 # if z > pmf_bin_symm_center, do this z = 2*pmf_bin_symm_center - z
