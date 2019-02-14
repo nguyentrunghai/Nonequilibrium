@@ -23,14 +23,13 @@ def bennett(w_F, w_R):
 
     need pymmbar (https://github.com/choderalab/pymbar):
 
-    w_F :   ndarray with shape (NF,)
+    :param w_F:   ndarray with shape (NF,)
             works done in forward direction starting from the initial (A) equilibrium ensemble, in unit kT
 
-    w_R :   ndarray with shape (NR,)
+    :param w_R:   ndarray with shape (NR,)
             works done in forward direction starting from the initial (A) equilibrium ensemble, in unit of kT
 
-    ------------
-    return
+    :return:
             df_AB   :   float
                         free energy difference between states A and B (df_AB = f_B - f_A), in unit of kT
     """
@@ -43,13 +42,10 @@ def bennett(w_F, w_R):
 
 def time_reversal_of_work(w_t):
     """
-    w_t     :   ndarray of shape (N, nr_time_steps)
+    :param w_t: ndarray of shape (N, nr_time_steps)
                 work done
 
-    -------------------
-    return
-                wr_t    :   ndarray of shape (N, nr_time_steps)
-                            time reversal of w_t
+    :return:    wr_t, ndarray of shape (N, nr_time_steps) time reversal of w_t
     """
     assert w_t.ndim == 2, "w_t must be a 2d array"
     assert np.all(w_t[:, 0] == 0), "all works at t=0 must be zero"
@@ -65,13 +61,10 @@ def time_reversal_of_work(w_t):
 
 def time_reversal_of_trajectory(z_t):
     """
-    z_t :   ndarray of shape (N, nr_time_steps)
-            None-equilibrium trajectory of the pulling coordinate
+    :param z_t: ndarray of shape (N, nr_time_steps)
+                None-equilibrium trajectory of the pulling coordinate
 
-    ---------------------
-    return
-            zR_t    :   ndarray of shape (N, nr_time_steps)
-                        time reversal of z_t
+    :return: zR_t, ndarray of shape (N, nr_time_steps) time reversal of z_t
     """
     assert z_t.ndim == 2, "w_t must be a 2d array"
     return z_t[:, ::-1]
