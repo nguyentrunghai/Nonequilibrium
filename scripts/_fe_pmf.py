@@ -31,7 +31,7 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     free_energies["nblocks"] = nblocks
     free_energies["ntrajs_per_block"] = ntrajs_per_block
     free_energies["timeseires_indices"] = timeseires_indices
-    
+
     free_energies["ks"] = pulling_data["ks"]
     free_energies["dt"] = pulling_data["dt"]
 
