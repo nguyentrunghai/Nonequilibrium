@@ -91,7 +91,7 @@ def unidirectional_pmf(pulling_data,
     for block in range(nblocks):
         left_bound = block * ntrajs_per_block
         right_bound = (block + 1) * ntrajs_per_block
-        pmfs["main_estimates"]["block_%d" % block] = uni_pmf(z_t[left_bound: right_bound],
+        _, pmfs["main_estimates"]["block_%d" % block] = uni_pmf(z_t[left_bound: right_bound],
                                                              w_t[left_bound: right_bound],
                                                              lambda_F, V, ks, pmf_bin_edges)
 
@@ -105,9 +105,10 @@ def unidirectional_pmf(pulling_data,
             left_bound = block * ntrajs_per_block
             right_bound = (block + 1) * ntrajs_per_block
 
-            pmfs["bootstrap_%d" % bootstrap]["block_%d" % block] = uni_pmf(z_t_bootstrap[left_bound: right_bound],
-                                                             w_t_bootstrap[left_bound: right_bound],
-                                                             lambda_F, V, ks, pmf_bin_edges)
+            _, pmfs["bootstrap_%d" % bootstrap]["block_%d" % block] = uni_pmf(
+                z_t_bootstrap[left_bound: right_bound],
+                w_t_bootstrap[left_bound: right_bound],
+                lambda_F, V, ks, pmf_bin_edges)
 
     return pmfs
 
