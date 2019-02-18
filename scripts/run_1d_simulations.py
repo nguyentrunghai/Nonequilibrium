@@ -86,7 +86,7 @@ for repeat in range(args.repeats):
     #                                                   args.trajs_per_repeat, args.dt, U, dU_dx)
     lower = repeat * args.trajs_per_repeat
     upper = (repeat + 1) * args.trajs_per_repeat
-    
+
     zF_t[lower : upper, :], wF_t[lower : upper, :] = switching(args.ks, lambda_F, args.equilibration_steps,
                                                                args.trajs_per_repeat, args.dt, U, dU_dx)
 
