@@ -1,5 +1,6 @@
 
 from __future__ import print_function
+from __future__ import division
 
 import numpy as np
 import pandas as pd
@@ -266,4 +267,18 @@ def left_replicate_pmf(first_half):
     second_half = 2*center - first_half
     second_half = second_half[::-1]
     return np.hstack([second_half, first_half])
+
+
+def stride(end, n):
+    """
+    between 0 and end-1
+    :param start:
+    :param end:
+    :param n:
+    :return:
+    """
+    results = np.linspace(0, end-1, n)
+    results = np.round(results)
+    results = results.astype(np.int)
+    return results
 
