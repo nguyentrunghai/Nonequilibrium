@@ -70,17 +70,28 @@ if args.whether_symmetrize_protocol:
 
 ntimesteps = lambda_F.shape[0]
 
-zF_t = np.zeros([args.repeats, args.trajs_per_repeat, ntimesteps], dtype=float)
-wF_t = np.zeros([args.repeats, args.trajs_per_repeat, ntimesteps], dtype=float)
+#zF_t = np.zeros([args.repeats, args.trajs_per_repeat, ntimesteps], dtype=float)
+zF_t = np.zeros([args.repeats * args.trajs_per_repeat, ntimesteps], dtype=float)
+#wF_t = np.zeros([args.repeats, args.trajs_per_repeat, ntimesteps], dtype=float)
+wF_t = np.zeros([args.repeats * args.trajs_per_repeat, ntimesteps], dtype=float)
 
-zR_t = np.zeros([args.repeats, args.trajs_per_repeat, ntimesteps], dtype=float)
-wR_t = np.zeros([args.repeats, args.trajs_per_repeat, ntimesteps], dtype=float)
+#zR_t = np.zeros([args.repeats, args.trajs_per_repeat, ntimesteps], dtype=float)
+zR_t = np.zeros([args.repeats * args.trajs_per_repeat, ntimesteps], dtype=float)
+#wR_t = np.zeros([args.repeats, args.trajs_per_repeat, ntimesteps], dtype=float)
+wR_t = np.zeros([args.repeats * args.trajs_per_repeat, ntimesteps], dtype=float)
 
 for repeat in range(args.repeats):
     print("Repeat ", repeat)
-    zF_t[repeat, :, :], wF_t[repeat, :, :] = switching(args.ks, lambda_F, args.equilibration_steps,
-                                                       args.trajs_per_repeat, args.dt, U, dU_dx)
-    zR_t[repeat, :, :], wR_t[repeat, :, :] = switching(args.ks, lambda_R, args.equilibration_steps,
+    #zF_t[repeat, :, :], wF_t[repeat, :, :] = switching(args.ks, lambda_F, args.equilibration_steps,
+    #                                                   args.trajs_per_repeat, args.dt, U, dU_dx)
+    lower = repeat * args.trajs_per_repeat
+    upper = (repeat + 1) * args.trajs_per_repeat
+    zF_t[lower : upper, :], wF_t[lower : upper, :] = switching(args.ks, lambda_F, args.equilibration_steps,
+                                                               args.trajs_per_repeat, args.dt, U, dU_dx)
+
+    #zR_t[repeat, :, :], wR_t[repeat, :, :] = switching(args.ks, lambda_R, args.equilibration_steps,
+    #                                                   args.trajs_per_repeat, args.dt, U, dU_dx)
+    zR_t[lower : upper, :], wR_t[lower : upper, :] = switching(args.ks, lambda_R, args.equilibration_steps,
                                                        args.trajs_per_repeat, args.dt, U, dU_dx)
 
 data = {}
