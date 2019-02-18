@@ -43,9 +43,13 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
 
     for bootstrap in range(nbootstraps):
         free_energies["bootstrap_%d"%bootstrap] = {}
+        traj_indices = np.random.choice(total_ntrajs_requested, size=total_ntrajs_requested, replace=True)
+        w_t_bootstrap = w_t[traj_indices]
+
         for block in range(nblocks):
-            traj_indices = np.random.choice(total_ntrajs_requested, size=ntrajs_per_block, replace=True)
-            free_energies["bootstrap_%d" % bootstrap]["block_%d"%block] = uni_df_t(w_t[traj_indices])
+            left_bound = block * ntrajs_per_block
+            right_bound = (block + 1) * ntrajs_per_block
+            free_energies["bootstrap_%d"%bootstrap]["block_%d"%block] = uni_df_t(w_t_bootstrap[left_bound : right_bound])
 
     return free_energies
 
