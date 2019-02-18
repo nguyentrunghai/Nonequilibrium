@@ -188,14 +188,14 @@ def bi_pmf(zF_t, wF_t, zR_t, wR_t, lambda_t, V, ks, bin_edges):
 def sym_est_df_t_v1(w_t):
     """
     Version 1 of symmetric estimator for free energy difference
+    The symmetric estimator of path ensemble average is
+    <F> = sum( F[x_n] + F[xr_n] * exp( -w_tau[x_n] ) ) / sum( 1 + exp( -w_tau[x_n] ) )
+    where xr_n is the time reversal of x_n
 
-    ----------------
-    w_t :   np.ndarray with shape (N, number_of_steps)
+    :param w_t: np.ndarray with shape (N, number_of_steps)
             works done in a symmetric pulling protocol, in unit of kT
 
-    ----------------
-    return
-            df_t :  np.ndarray with shape (number_of_steps)
+    :return: df_t, np.ndarray with shape (number_of_steps)
                     free energy difference as a function of number of time steps, in units of kT
     """
     assert w_t.ndim == 2, "w_t must be 2d array"
@@ -217,39 +217,30 @@ def sym_est_pmf_v1(z_t, w_t, lambda_t, V, ks, bin_edges, symmetrize_pmf):
     """
     Version 1 of symmetric estimator for PMF
 
+    The symmetric estimator of path ensemble average is
+    <F> = sum( F[x_n] + F[xr_n] * exp( -w_tau[x_n] ) ) / sum( 1 + exp( -w_tau[x_n] ) )
+    where xr_n is the time reversal of x_n
+
     Substitute the symmetric estimator (v1) of path ensemble average defined above into Eq. (9) in
     Minh and Adib, Phys. Rev. Lett. 100, 180602 (2008)
 
-    -------------------
-    z_t     :   np.ndarray with shape (N, number_of_steps)
-            :   the (fluctuating) coordinate pulled by a symmetric protocol or in a symmetric
-
-    w_t     :   np.ndarray with shape (N, number_of_steps)
-            :   works done in forward direction, in unit of kT
-
-    lambda_t    :   np.ndarray of shape (number_of_steps)
-                :   coordinate controlled by the pulling procedure
-
-    V           :   a python function
-                    pulling harmonic potential
+    :param z_t: np.ndarray with shape (N, number_of_steps)
+                the (fluctuating) coordinate pulled by a symmetric protocol or in a symmetric
+    :param w_t: np.ndarray with shape (N, number_of_steps)
+                works done in forward direction, in unit of kT
+    :param lambda_t: np.ndarray of shape (number_of_steps)
+                    coordinate controlled by the pulling procedure
+    :param V: a python function, pulling harmonic potential
                     e.g., 0.5 * ks * (z - lambda)**2
-
-    ks          :   float
-                    harmonic force constant of V
+    :param ks: float, harmonic force constant of V
                     the unit of ks is such that V is in unit of kT
-
-    bin_edges   :   np.ndarray with shape ( nbins+1, )
+    :param bin_edges: np.ndarray with shape ( nbins+1, )
                     same distance unit as zF_t and zR_t
+    :param symmetrize_pmf: bool, should set to True when both system and protocol are symmetric
 
-    symmetrize_pmf :   bool
-                         should set to True when both system and protocol are symmetric
-    -----------------
-    return
-                centers :   np.ndarray with shape (bin_edges.shape[0]-1 )
-                            bin centers
-
-                pmf     :   np.ndarray with shape (bin_edges.shape[0]-1 )
-                            potential of mean force
+    :return: (centers, pmf)
+            centers : np.ndarray with shape (bin_edges.shape[0]-1 ), bin centers
+                pmf : np.ndarray with shape (bin_edges.shape[0]-1 ), potential of mean force
     """
     assert z_t.ndim == w_t.ndim == 2, "z_t and w_t must be 2d array"
     assert z_t.shape == w_t.shape, "z_t and w_t must have the same shape"
@@ -295,15 +286,15 @@ def sym_est_pmf_v1(z_t, w_t, lambda_t, V, ks, bin_edges, symmetrize_pmf):
 def sym_est_df_t_v2(w_t):
     """
     Version 2 of symmetric estimator for free energy difference
+    The symmetric estimator of path ensemble average is
+    <F> = (1/N) * sum{ ( F[x_n] + F[xr_n] * exp( -w_tau[x_n] ) ) / ( 1 + exp( -w_tau[x_n] ) ) }
+    where xr_n is the time reversal of x_n
 
-    ----------------
-    w_t :   np.ndarray with shape (N, number_of_steps)
+    :param w_t: np.ndarray with shape (N, number_of_steps)
             works done in a symmetric pulling protocol, in unit of kT
 
-    ----------------
-    return
-            df_t :  np.ndarray with shape (number_of_steps)
-                    free energy difference as a function of number of time steps, in units of kT
+    :return: df_t, np.ndarray with shape (number_of_steps)
+                free energy difference as a function of number of time steps, in units of kT
     """
     assert w_t.ndim == 2, "w_t must be 2d array"
     w_tau = w_t[:, -1]
@@ -321,40 +312,33 @@ def sym_est_df_t_v2(w_t):
 def sym_est_pmf_v2(z_t, w_t, lambda_t, V, ks, bin_edges, symmetrize_pmf):
     """
     Version 2 of symmetric estimator for PMF
+    The symmetric estimator of path ensemble average is
+    <F> = (1/N) * sum{ ( F[x_n] + F[xr_n] * exp( -w_tau[x_n] ) ) / ( 1 + exp( -w_tau[x_n] ) ) }
+    where xr_n is the time reversal of x_n
 
     Substitute the symmetric estimator (v2) of path ensemble average defined above into Eq. (9) in
     Minh and Adib, Phys. Rev. Lett. 100, 180602 (2008)
 
-    -------------------
-    z_t     :   np.ndarray with shape (N, number_of_steps)
-            :   the (fluctuating) coordinate pulled by a symmetric protocol or in a symmetric
-
-    w_t     :   np.ndarray with shape (N, number_of_steps)
-            :   works done in forward direction, in unit of kT
-
-    lambda_t    :   np.ndarray of shape (number_of_steps)
-                :   coordinate controlled by the pulling procedure
-
-    V           :   a python function
-                    pulling harmonic potential
+    :param z_t: np.ndarray with shape (N, number_of_steps),
+                the (fluctuating) coordinate pulled by a symmetric protocol or in a symmetric
+    :param w_t: np.ndarray with shape (N, number_of_steps),
+                works done in forward direction, in unit of kT
+    :param lambda_t: np.ndarray of shape (number_of_steps)
+                    coordinate controlled by the pulling procedure
+    :param V: a python function, pulling harmonic potential
                     e.g., 0.5 * ks * (z - lambda)**2
-
-    ks          :   float
-                    harmonic force constant of V
+    :param ks: float, harmonic force constant of V
                     the unit of ks is such that V is in unit of kT
-
-    bin_edges   :   np.ndarray with shape ( nbins+1, )
+    :param bin_edges: np.ndarray with shape ( nbins+1, )
                     same distance unit as zF_t and zR_t
-
-    symmetrize_pmf :   bool
+    :param symmetrize_pmf: bool
                          should set to True when both system and protocol are symmetric
-    -----------------
-    return
-                centers :   np.ndarray with shape (bin_edges.shape[0]-1 )
-                            bin centers
 
-                pmf     :   np.ndarray with shape (bin_edges.shape[0]-1 )
-                            potential of mean force
+    :return: (centers, pmf)
+                centers : np.ndarray with shape (bin_edges.shape[0]-1 )
+                            bin centers
+                pmf : np.ndarray with shape (bin_edges.shape[0]-1 )
+                    potential of mean force
     """
     assert z_t.ndim == w_t.ndim == 2, "z_t and w_t must be 2d array"
     assert z_t.shape == w_t.shape, "z_t and w_t must have the same shape"
