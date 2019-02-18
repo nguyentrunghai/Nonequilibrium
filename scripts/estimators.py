@@ -15,14 +15,9 @@ def uni_df_t(w_t):
     """
     unidirectional estimator for free energy difference
 
-    ----------------
-    w_t :   ndarray with shape (N, number_of_steps)
-            works done, unit of kT
-
-    ----------------
-    return
-            df_t :  ndarray with shape (number_of_steps)
-                    free energy difference as a function of number of time steps, in units of kT
+    :param w_t: ndarray with shape (N, number_of_steps), works done, in unit of kT
+    :return: df_t, ndarray with shape (number_of_steps),
+                   free energy difference as a function of number of time steps, in units of kT
     """
     assert w_t.ndim == 2, "w_t must be 2d array"
 
@@ -37,34 +32,19 @@ def uni_pmf(z_t, w_t, lambda_t, V, ks, bin_edges):
     """
     unidirectional estimator for PMF
 
-    --------------
-    z_t     :   ndarray with shape (N, number_of_steps)
+    :param z_t: ndarray with shape (N, number_of_steps)
                 the (fluctuating) coordinate pulled by a protocol
-
-    w_t     :   ndarray with shape (N, number_of_steps)
+    :param w_t: ndarray with shape (N, number_of_steps)
                 works done in forward direction, in unit of kT
-
-    lambda_t    :   ndarray of shape (number_of_steps)
+    :param lambda_t: ndarray of shape (number_of_steps)
                     coordinate controlled by the pulling procedure
+    :param V: a python function, pulling harmonic potential, e.g., 0.5 * ks * (z - lambda)**2
+    :param ks: float, harmonic force constant of V, the unit of ks is such that V is in unit of kT
+    :param bin_edges: ndarray with shape ( nbins+1, ), same distance unit as zF_t and zR_t
 
-    V           :   a python function
-                    pulling harmonic potential
-                    e.g., 0.5 * ks * (z - lambda)**2
-
-    ks          :   float
-                    harmonic force constant of V
-                    the unit of ks is such that V is in unit of kT
-
-    bin_edges   :   ndarray with shape ( nbins+1, )
-                    same distance unit as zF_t and zR_t
-
-    -----------------
-    return
-                centers :   ndarray with shape (bin_edges.shape[0]-1 )
-                            bin centers
-
-                pmf     :   ndarray with shape (bin_edges.shape[0]-1 )
-                            potential of mean force
+    :return: (centers, pmf)
+                centers : ndarray with shape (bin_edges.shape[0]-1 ), bin centers
+                pmf : ndarray with shape (bin_edges.shape[0]-1 ) potential of mean force
     """
     assert z_t.ndim == w_t.ndim == 2, "z_t and w_t must be 2d array"
     assert z_t.shape == w_t.shape, "z_t and w_t must have the same shape"
@@ -95,21 +75,13 @@ def bi_df_t(wF_t, wR_t):
     """
     Bidirectional estimator for free energy difference
 
-    Implement Eq. (21) in Minh and Chodera,
-                        Optimal estimators and asymptotic variances for nonequilibrium path-ensemble averages
-                        J. Chem. Phys. 131, 134110 (2009)
+    :param wF_t: ndarray with shape (NF, number_of_steps)
+                    works done in forward direction, in unit of kT
+    :param wR_t: ndarray with shape (NR, number_of_steps)
+                    works done in reverse direction, in unit of kT
 
-    --------------------
-    wF_t    :   ndarray with shape (NF, number_of_steps)
-                works done in forward direction, in unit of kT
-
-    wR_t    :   ndarray with shape (NR, number_of_steps)
-                works done in reverse direction, in unit of kT
-
-    --------------------
-    return
-                df_t    :   ndarray with shape (number_of_steps)
-                            free energy difference as a function of number of time steps, in units of kT
+    :return: df_t, ndarray with shape (number_of_steps)
+                    free energy difference as a function of number of time steps, in units of kT
     """
     assert wF_t.ndim == wR_t.ndim == 2, "wF_t and wR_t must be 2D array"
     assert wF_t.shape[1] == wR_t.shape[1], "number of steps in wF_t and wR_t must be the same"
@@ -148,41 +120,28 @@ def bi_pmf(zF_t, wF_t, zR_t, wR_t, lambda_t, V, ks, bin_edges):
     Minh and Chodera, Optimal estimators and asymptotic variances for nonequilibrium path-ensemble averages,
                 J. Chem. Phys. 131, 134110 (2009)
 
-    ---------------
+    -----------------------
 
-    zF_t    :   ndarray with shape (NF, number_of_steps)
-                the (fluctuating) coordinate pulled in forward direction
-
-    wF_t    :   ndarray with shape (NF, number_of_steps)
+    :param zF_t: ndarray with shape (NF, number_of_steps),
+            the (fluctuating) coordinate pulled in forward direction
+    :param wF_t: ndarray with shape (NF, number_of_steps),
                 works done in forward direction, in unit of kT
-
-    zR_t    :   ndarray with shape (NR, number_of_steps)
+    :param zR_t: ndarray with shape (NR, number_of_steps)
                 the (fluctuating) coordinate pulled in reverse direction
-
-    wR_t    :   ndarray with shape (NR, number_of_steps)
-                works done in reverse direction, in unit of kT
-
-    lambda_t    :   ndarray of shape (number_of_steps)
+    :param wR_t: ndarray with shape (NR, number_of_steps)
+                the (fluctuating) coordinate pulled in reverse direction
+    :param lambda_t: ndarray of shape (number_of_steps)
                     coordinate controlled by the pulling procedure
-
-    V       :   a python function
-                pulling harmonic potential
+    :param V: a python function, pulling harmonic potential
                 e.g., 0.5 * ks * (z - lambda)**2
-
-    ks      :   float
-                harmonic force constant of V
+    :param ks: float, harmonic force constant of V
                 the unit of ks is such that V is in unit of kT
-
-    bin_edges   :   ndarray with shape ( nbins+1, )
+    :param bin_edges: ndarray with shape ( nbins+1, )
                     same distance unit as zF_t and zR_t
 
-    ---------------
-    return
-                centers :   ndarray with shape (bin_edges.shape[0]-1 )
-                            bin centers
-
-                pmf :   ndarray with shape (bin_edges.shape[0]-1 )
-                        potential of mean force
+    :return: (centers, pmf)
+                centers :   ndarray with shape (bin_edges.shape[0]-1 ) bin centers
+                pmf :   ndarray with shape (bin_edges.shape[0]-1 ) potential of mean force
     """
     assert zF_t.ndim == zR_t.ndim == wF_t.ndim == wR_t.ndim == 2, " zF_t, wF_t, zR_t, wR_t must be 2D array"
     assert zF_t.shape == wF_t.shape, "zF_t and wF_t must have the same shape"
