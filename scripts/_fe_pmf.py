@@ -235,7 +235,7 @@ def bidirectional_pmf(pulling_data,
         raise ValueError("Number of trajs requested is too large")
 
     ks = pulling_data["ks"]
-    lambda_F = pulling_data["lambda_F"]
+    lambdas = pulling_data["lambda_F"]
 
     wF_t = pulling_data["wF_t"][: total_ntrajs_requested // 2]
     zF_t = pulling_data["zF_t"][: total_ntrajs_requested // 2]
@@ -257,7 +257,7 @@ def bidirectional_pmf(pulling_data,
                                                               wF_t[left_bound : right_bound],
                                                               zR_t[left_bound : right_bound],
                                                               wR_t[left_bound : right_bound],
-                                                                lambda_F, V, ks, pmf_bin_edges)
+                                                              lambdas, V, ks, pmf_bin_edges)
 
     for bootstrap in range(nbootstraps):
         pmfs["bootstrap_%d" % bootstrap] = {}
@@ -273,10 +273,10 @@ def bidirectional_pmf(pulling_data,
             right_bound = (block + 1) * (ntrajs_per_block // 2)
 
             _, pmfs["bootstrap_%d" % bootstrap]["block_%d" % block] = bi_pmf(zF_t_bootstrap[left_bound : right_bound],
-                                                              wF_t_bootstrap[left_bound : right_bound],
-                                                              zR_t_bootstrap[left_bound : right_bound],
-                                                              wR_t_bootstrap[left_bound : right_bound],
-                                                                lambda_F, V, ks, pmf_bin_edges)
+                                                                             wF_t_bootstrap[left_bound : right_bound],
+                                                                             zR_t_bootstrap[left_bound : right_bound],
+                                                                             wR_t_bootstrap[left_bound : right_bound],
+                                                                             lambdas, V, ks, pmf_bin_edges)
 
     return pmfs
 
@@ -357,6 +357,7 @@ def symmetric_pmf(pulling_data,
     if total_ntrajs_requested > total_ntrajs_in_data:
         raise ValueError("Number of trajs requested is too large")
 
+    ks = pulling_data["ks"]
     lambdas = pulling_data["lambda_F"]
     w_t = pulling_data["wF_t"][: total_ntrajs_requested]
     z_t = pulling_data["zF_t"][: total_ntrajs_requested]
