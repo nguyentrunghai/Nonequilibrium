@@ -100,7 +100,7 @@ def unidirectional_pmf(pulling_data,
         total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
     elif which_data == "R":
         total_ntrajs_in_data = pulling_data["wR_t"].shape[0]
-        
+
     total_ntrajs_requested = nblocks * ntrajs_per_block
     if total_ntrajs_requested > total_ntrajs_in_data:
         raise ValueError("Number of trajs requested is too large")
@@ -221,3 +221,61 @@ def bidirectional_pmf(pulling_data,
     :param nbootstraps: int, number of bootstrap samples
     :return: pmfs, dict
     """
+    if pulling_data["wF_t"].shape[0] != pulling_data["wR_t"].shape[0]:
+        raise ValueError("Forward and reverse must have the same number of trajectories")
+
+    if ntrajs_per_block % 2 != 0:
+        raise ValueError("Number of trajs per block must be even")
+
+    total_ntrajs_in_data = pulling_data["wF_t"].shape[0] + pulling_data["wR_t"].shape[0]
+
+    total_ntrajs_requested = nblocks * ntrajs_per_block
+
+    if total_ntrajs_requested > total_ntrajs_in_data:
+        raise ValueError("Number of trajs requested is too large")
+
+    ks = pulling_data["ks"]
+    lambda_F = pulling_data["lambda_F"]
+
+    wF_t = pulling_data["wF_t"][: total_ntrajs_requested // 2]
+    zF_t = pulling_data["zF_t"][: total_ntrajs_requested // 2]
+
+    wR_t = pulling_data["wR_t"][: total_ntrajs_requested // 2]
+    zR_t = pulling_data["zR_t"][: total_ntrajs_requested // 2]
+
+    pmfs = {}
+    pmfs["nblocks"] = nblocks
+    pmfs["ntrajs_per_block"] = ntrajs_per_block
+    pmfs["pmf_bin_edges"] = pmf_bin_edges
+    pmfs["ks"] = ks
+
+    pmfs["main_estimates"] = {}
+    for block in range(nblocks):
+        left_bound = block * (ntrajs_per_block // 2)
+        right_bound = (block + 1) * (ntrajs_per_block // 2)
+        , pmfs["main_estimates"]["block_%d" % block] = bi_pmf(zF_t[left_bound : right_bound],
+                                                              wF_t[left_bound : right_bound],
+                                                              zR_t[left_bound : right_bound],
+                                                              wR_t[left_bound : right_bound],
+                                                                lambda_F, V, ks, pmf_bin_edges)
+
+    for bootstrap in range(nbootstraps):
+        pmfs["bootstrap_%d" % bootstrap] = {}
+        traj_indices = np.random.choice(total_ntrajs_requested // 2,
+                                        size=total_ntrajs_requested // 2, replace=True)
+        wF_t_bootstrap = wF_t[traj_indices]
+        zF_t_bootstrap = zF_t[traj_indices]
+        wR_t_bootstrap = wR_t[traj_indices]
+        zR_t_bootstrap = zR_t[traj_indices]
+
+        for block in range(nblocks):
+            left_bound = block * (ntrajs_per_block // 2)
+            right_bound = (block + 1) * (ntrajs_per_block // 2)
+
+            _, pmfs["bootstrap_%d" % bootstrap]["block_%d" % block] = bi_pmf(zF_t_bootstrap[left_bound : right_bound],
+                                                              wF_t_bootstrap[left_bound : right_bound],
+                                                              zR_t_bootstrap[left_bound : right_bound],
+                                                              wR_t_bootstrap[left_bound : right_bound],
+                                                                lambda_F, V, ks, pmf_bin_edges)
+
+    return pmfs
