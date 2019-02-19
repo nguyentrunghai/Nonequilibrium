@@ -35,7 +35,7 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     free_energies["dt"] = pulling_data["dt"]
 
     free_energies["lambdas"] = pulling_data["lambda_F"][timeseires_indices]
-    w_t = pulling_data["wF_t"][:total_ntrajs_requested, timeseires_indices]
+    w_t = pulling_data["wF_t"][: total_ntrajs_requested, timeseires_indices]
 
     free_energies["main_estimates"] = {}
     for block in range(nblocks):
@@ -77,8 +77,8 @@ def unidirectional_pmf(pulling_data,
 
     lambda_F = pulling_data["lambda_F"]
     ks = pulling_data["ks"]
-    w_t = pulling_data["wF_t"][:total_ntrajs_requested]
-    z_t = pulling_data["zF_t"][:total_ntrajs_requested]
+    w_t = pulling_data["wF_t"][: total_ntrajs_requested]
+    z_t = pulling_data["zF_t"][: total_ntrajs_requested]
 
     pmfs = {}
     pmfs["nblocks"] = nblocks
@@ -123,3 +123,46 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     :param nbootstraps: int, number of bootstrap samples
     :return: free_energies, dict
     """
+    total_ntrajs_in_data = pulling_data["wF_t"].shape[0] + pulling_data["wR_t"].shape[0]
+
+    total_ntrajs_requested = nblocks * ntrajs_per_block
+    if total_ntrajs_requested % 2 != 0:
+        raise ValueError("Number of trajs requested must be even")
+
+    if total_ntrajs_requested > total_ntrajs_in_data:
+        raise ValueError("Number of trajs requested is too large")
+
+    free_energies = {}
+    free_energies["nblocks"] = nblocks
+    free_energies["ntrajs_per_block"] = ntrajs_per_block
+    free_energies["timeseires_indices"] = timeseires_indices
+
+    free_energies["ks"] = pulling_data["ks"]
+    free_energies["dt"] = pulling_data["dt"]
+    free_energies["lambdas"] = pulling_data["lambda_F"][timeseires_indices]
+
+    wF_t = pulling_data["wF_t"][: total_ntrajs_requested // 2, timeseires_indices]
+    wR_t = pulling_data["wR_t"][: total_ntrajs_requested // 2, timeseires_indices]
+
+    free_energies["main_estimates"] = {}
+    for block in range(nblocks):
+        left_bound = block * (ntrajs_per_block // 2)
+        right_bound = (block + 1) * (ntrajs_per_block // 2)
+        free_energies["main_estimates"]["block_%d" % block] = bi_df_t(wF_t[left_bound : right_bound],
+                                                                      wR_t[left_bound : right_bound])
+
+        for bootstrap in range(nbootstraps):
+            free_energies["bootstrap_%d" % bootstrap] = {}
+            traj_indices = np.random.choice(total_ntrajs_requested // 2,
+                                            size=total_ntrajs_requested // 2, replace=True)
+            wF_t_bootstrap = wF_t[traj_indices]
+            wR_t_bootstrap = wR_t[traj_indices]
+
+            for block in range(nblocks):
+                left_bound = block * (ntrajs_per_block // 2)
+                right_bound = (block + 1) * (ntrajs_per_block // 2)
+                free_energies["bootstrap_%d" % bootstrap]["block_%d" % block] = bi_df_t(
+                    wF_t_bootstrap[left_bound : right_bound],
+                    wR_t_bootstrap[left_bound : right_bound])
+
+    return free_energies
