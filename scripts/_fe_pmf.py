@@ -12,19 +12,28 @@ from estimators import sym_est_df_t_v2, sym_est_pmf_v2
 
 def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
                       timeseries_indices,
+                      which_data,
                       nbootstraps=0):
     """
     :param pulling_data: dict returned by _IO.load_1d_sim_results()
     :param nblocks: int, number of blocks of trajectories
     :param ntrajs_per_block: int, number of trajectories per block
     :param timeseries_indices: list or 1d ndarray of int
+    :param which_data: str
     :param nbootstraps: int, number of bootstrap samples
     :return: free_energies, dict
     """
+    if which_data not in ["F", "R"]:
+        raise ValueError("Unknown which_data")
+
     if ntrajs_per_block % 2 != 0:
         raise ValueError("Number of trajs per block must be even")
 
-    total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
+    if which_data != "F":
+        total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
+    elif which_data != "R":
+        total_ntrajs_in_data = pulling_data["wR_t"].shape[0]
+
     total_ntrajs_requested = nblocks * ntrajs_per_block
     if total_ntrajs_requested  > total_ntrajs_in_data:
         raise ValueError("Number of trajs requested is too large")
@@ -37,8 +46,14 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     free_energies["ks"] = pulling_data["ks"]
     free_energies["dt"] = pulling_data["dt"]
 
-    free_energies["lambda_F"] = pulling_data["lambda_F"][timeseries_indices]
-    w_t = pulling_data["wF_t"][: total_ntrajs_requested, timeseries_indices]
+    if which_data == "F":
+        w_t = pulling_data["wF_t"][: total_ntrajs_requested, timeseries_indices]
+        lambdas = pulling_data["lambda_F"][timeseries_indices]
+    elif which_data == "R":
+        w_t = pulling_data["wR_t"][: total_ntrajs_requested, timeseries_indices]
+        lambdas = pulling_data["lambda_R"][timeseries_indices]
+
+    free_energies["lambdas"] = lambdas
 
     free_energies["main_estimates"] = {}
     for block in range(nblocks):
@@ -62,29 +77,44 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
 
 def unidirectional_pmf(pulling_data,
                        nblocks, ntrajs_per_block,
+                       which_data,
                        pmf_bin_edges, V,
                        nbootstraps=0):
     """
     :param pulling_data: dict returned by _IO.load_1d_sim_results()
-    :param pmf_bin_edges: ndarray
-    :param V: python function, pulling harmonic potential
-    :param nblocks: int, number of trajectories per block
+    :param nblocks: int, number of blocks of trajectories
     :param ntrajs_per_block: int, number of trajectories per block
+    :param which_data: str
+    :param pmf_bin_edges: ndarray, bin edges
+    :param V: python function, pulling harmonic potential
     :param nbootstraps: int, number of bootstrap samples
     :return: pmfs, dict
     """
+    if which_data not in ["F", "R"]:
+        raise ValueError("Unknown which_data")
+
     if ntrajs_per_block % 2 != 0:
         raise ValueError("Number of trajs per block must be even")
 
-    total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
+    if which_data == "F":
+        total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
+    elif which_data == "R":
+        total_ntrajs_in_data = pulling_data["wR_t"].shape[0]
+        
     total_ntrajs_requested = nblocks * ntrajs_per_block
     if total_ntrajs_requested > total_ntrajs_in_data:
         raise ValueError("Number of trajs requested is too large")
 
-    lambda_F = pulling_data["lambda_F"]
     ks = pulling_data["ks"]
-    w_t = pulling_data["wF_t"][: total_ntrajs_requested]
-    z_t = pulling_data["zF_t"][: total_ntrajs_requested]
+
+    if which_data == "F":
+        lambdas = pulling_data["lambda_F"]
+        w_t = pulling_data["wF_t"][: total_ntrajs_requested]
+        z_t = pulling_data["zF_t"][: total_ntrajs_requested]
+    elif which_data == "R":
+        lambdas = pulling_data["lambda_R"]
+        w_t = pulling_data["wR_t"][: total_ntrajs_requested]
+        z_t = pulling_data["zR_t"][: total_ntrajs_requested]
 
     pmfs = {}
     pmfs["nblocks"] = nblocks
@@ -98,7 +128,7 @@ def unidirectional_pmf(pulling_data,
         right_bound = (block + 1) * ntrajs_per_block
         _, pmfs["main_estimates"]["block_%d" % block] = uni_pmf(z_t[left_bound: right_bound],
                                                              w_t[left_bound: right_bound],
-                                                             lambda_F, V, ks, pmf_bin_edges)
+                                                             lambdas, V, ks, pmf_bin_edges)
 
     for bootstrap in range(nbootstraps):
         pmfs["bootstrap_%d" % bootstrap] = {}
@@ -113,7 +143,7 @@ def unidirectional_pmf(pulling_data,
             _, pmfs["bootstrap_%d" % bootstrap]["block_%d" % block] = uni_pmf(
                 z_t_bootstrap[left_bound: right_bound],
                 w_t_bootstrap[left_bound: right_bound],
-                lambda_F, V, ks, pmf_bin_edges)
+                lambdas, V, ks, pmf_bin_edges)
 
     return pmfs
 
@@ -123,7 +153,7 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
                       nbootstraps=0):
     """
     :param pulling_data: dict returned by _IO.load_1d_sim_results()
-    :param nblocks: dict returned by _IO.load_1d_sim_results()
+    :param nblocks: int, number of blocks of trajectories
     :param ntrajs_per_block: int, number of trajectories per block
     :param timeseries_indices: list or 1d ndarray of int
     :param nbootstraps: int, number of bootstrap samples
@@ -176,3 +206,18 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
                     wR_t_bootstrap[left_bound : right_bound])
 
     return free_energies
+
+
+def bidirectional_pmf(pulling_data,
+                       nblocks, ntrajs_per_block,
+                       pmf_bin_edges, V,
+                       nbootstraps=0):
+    """
+    :param pulling_data: dict returned by _IO.load_1d_sim_results()
+    :param nblocks: int, number of blocks of trajectories
+    :param ntrajs_per_block: int, number of trajectories per block
+    :param pmf_bin_edges: ndarray, bin edges
+    :param V: python function, pulling harmonic potential
+    :param nbootstraps: int, number of bootstrap samples
+    :return: pmfs, dict
+    """
