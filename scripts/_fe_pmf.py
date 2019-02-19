@@ -21,6 +21,9 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     :param nbootstraps: int, number of bootstrap samples
     :return: free_energies, dict
     """
+    if ntrajs_per_block % 2 != 0:
+        raise ValueError("Number of trajs per block must be even")
+
     total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
     total_ntrajs_requested = nblocks * ntrajs_per_block
     if total_ntrajs_requested  > total_ntrajs_in_data:
@@ -34,7 +37,7 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     free_energies["ks"] = pulling_data["ks"]
     free_energies["dt"] = pulling_data["dt"]
 
-    free_energies["lambdas"] = pulling_data["lambda_F"][timeseries_indices]
+    free_energies["lambda_F"] = pulling_data["lambda_F"][timeseries_indices]
     w_t = pulling_data["wF_t"][: total_ntrajs_requested, timeseries_indices]
 
     free_energies["main_estimates"] = {}
@@ -70,6 +73,9 @@ def unidirectional_pmf(pulling_data,
     :param nbootstraps: int, number of bootstrap samples
     :return: pmfs, dict
     """
+    if ntrajs_per_block % 2 != 0:
+        raise ValueError("Number of trajs per block must be even")
+
     total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
     total_ntrajs_requested = nblocks * ntrajs_per_block
     if total_ntrajs_requested > total_ntrajs_in_data:
@@ -123,11 +129,15 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     :param nbootstraps: int, number of bootstrap samples
     :return: free_energies, dict
     """
+    if pulling_data["wF_t"].shape[0] != pulling_data["wR_t"].shape[0]:
+        raise ValueError("Forward and reverse must have the same number of trajectories")
+
+    if ntrajs_per_block % 2 != 0:
+        raise ValueError("Number of trajs per block must be even")
+
     total_ntrajs_in_data = pulling_data["wF_t"].shape[0] + pulling_data["wR_t"].shape[0]
 
     total_ntrajs_requested = nblocks * ntrajs_per_block
-    if total_ntrajs_requested % 2 != 0:
-        raise ValueError("Number of trajs requested must be even")
 
     if total_ntrajs_requested > total_ntrajs_in_data:
         raise ValueError("Number of trajs requested is too large")
@@ -139,7 +149,7 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
 
     free_energies["ks"] = pulling_data["ks"]
     free_energies["dt"] = pulling_data["dt"]
-    free_energies["lambdas"] = pulling_data["lambda_F"][timeseries_indices]
+    free_energies["lambda_F"] = pulling_data["lambda_F"][timeseries_indices]
 
     wF_t = pulling_data["wF_t"][: total_ntrajs_requested // 2, timeseries_indices]
     wR_t = pulling_data["wR_t"][: total_ntrajs_requested // 2, timeseries_indices]
