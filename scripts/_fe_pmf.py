@@ -17,9 +17,8 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     :param pulling_data: dict returned by _IO.load_1d_sim_results()
     :param nblocks: int, number of blocks of trajectories
     :param ntrajs_per_block: int, number of trajectories per block
-    :param timeseires_indices: list of 1d ndarray of int
+    :param timeseires_indices: list or 1d ndarray of int
     :param nbootstraps: int, number of bootstrap samples
-
     :return: free_energies, dict
     """
     total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
@@ -63,13 +62,13 @@ def unidirectional_pmf(pulling_data,
                        pmf_bin_edges, V,
                        nbootstraps=0):
     """
-    :param pulling_data:
-    :param pmf_bin_edges:
-    :param V:
-    :param nblocks:
-    :param ntrajs_per_block:
-    :param nbootstraps:
-    :return:
+    :param pulling_data: dict returned by _IO.load_1d_sim_results()
+    :param pmf_bin_edges: ndarray
+    :param V: python function, pulling harmonic potential
+    :param nblocks: int, number of trajectories per block
+    :param ntrajs_per_block: int, number of trajectories per block
+    :param nbootstraps: int, number of bootstrap samples
+    :return: pmfs, dict
     """
     total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
     total_ntrajs_requested = nblocks * ntrajs_per_block
@@ -112,3 +111,15 @@ def unidirectional_pmf(pulling_data,
 
     return pmfs
 
+
+def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
+                      timeseires_indices,
+                      nbootstraps=0):
+    """
+    :param pulling_data: dict returned by _IO.load_1d_sim_results()
+    :param nblocks: dict returned by _IO.load_1d_sim_results()
+    :param ntrajs_per_block: int, number of trajectories per block
+    :param timeseires_indices: list or 1d ndarray of int
+    :param nbootstraps: int, number of bootstrap samples
+    :return: free_energies, dict
+    """
