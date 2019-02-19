@@ -11,13 +11,13 @@ from estimators import sym_est_df_t_v2, sym_est_pmf_v2
 
 
 def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
-                      timeseires_indices,
+                      timeseries_indices,
                       nbootstraps=0):
     """
     :param pulling_data: dict returned by _IO.load_1d_sim_results()
     :param nblocks: int, number of blocks of trajectories
     :param ntrajs_per_block: int, number of trajectories per block
-    :param timeseires_indices: list or 1d ndarray of int
+    :param timeseries_indices: list or 1d ndarray of int
     :param nbootstraps: int, number of bootstrap samples
     :return: free_energies, dict
     """
@@ -29,13 +29,13 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     free_energies = {}
     free_energies["nblocks"] = nblocks
     free_energies["ntrajs_per_block"] = ntrajs_per_block
-    free_energies["timeseires_indices"] = timeseires_indices
+    free_energies["timeseries_indices"] = timeseries_indices
 
     free_energies["ks"] = pulling_data["ks"]
     free_energies["dt"] = pulling_data["dt"]
 
-    free_energies["lambdas"] = pulling_data["lambda_F"][timeseires_indices]
-    w_t = pulling_data["wF_t"][: total_ntrajs_requested, timeseires_indices]
+    free_energies["lambdas"] = pulling_data["lambda_F"][timeseries_indices]
+    w_t = pulling_data["wF_t"][: total_ntrajs_requested, timeseries_indices]
 
     free_energies["main_estimates"] = {}
     for block in range(nblocks):
@@ -113,13 +113,13 @@ def unidirectional_pmf(pulling_data,
 
 
 def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
-                      timeseires_indices,
+                     timeseries_indices,
                       nbootstraps=0):
     """
     :param pulling_data: dict returned by _IO.load_1d_sim_results()
     :param nblocks: dict returned by _IO.load_1d_sim_results()
     :param ntrajs_per_block: int, number of trajectories per block
-    :param timeseires_indices: list or 1d ndarray of int
+    :param timeseries_indices: list or 1d ndarray of int
     :param nbootstraps: int, number of bootstrap samples
     :return: free_energies, dict
     """
@@ -135,14 +135,14 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     free_energies = {}
     free_energies["nblocks"] = nblocks
     free_energies["ntrajs_per_block"] = ntrajs_per_block
-    free_energies["timeseires_indices"] = timeseires_indices
+    free_energies["timeseries_indices"] = timeseries_indices
 
     free_energies["ks"] = pulling_data["ks"]
     free_energies["dt"] = pulling_data["dt"]
-    free_energies["lambdas"] = pulling_data["lambda_F"][timeseires_indices]
+    free_energies["lambdas"] = pulling_data["lambda_F"][timeseries_indices]
 
-    wF_t = pulling_data["wF_t"][: total_ntrajs_requested // 2, timeseires_indices]
-    wR_t = pulling_data["wR_t"][: total_ntrajs_requested // 2, timeseires_indices]
+    wF_t = pulling_data["wF_t"][: total_ntrajs_requested // 2, timeseries_indices]
+    wR_t = pulling_data["wR_t"][: total_ntrajs_requested // 2, timeseries_indices]
 
     free_energies["main_estimates"] = {}
     for block in range(nblocks):
