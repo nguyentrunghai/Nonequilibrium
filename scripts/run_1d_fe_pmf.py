@@ -109,3 +109,18 @@ if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
     pmf_bin_edges = pmf_bin_edges[:half_len]
 
 print("pmf_bin_edges", pmf_bin_edges)
+
+if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
+    if symmetric_center is None:
+        raise ValueError("symmetric_center is None")
+
+    if args.side_to_wrap_z == "right":
+        pulling_data["zF_t"] = right_wrap(pulling_data["zF_t"], symmetric_center)
+        pulling_data["zR_t"] = right_wrap(pulling_data["zR_t"], symmetric_center)
+
+    elif args.side_to_wrap_z == "left":
+        pulling_data["zF_t"] = left_wrap(pulling_data["zF_t"], symmetric_center)
+        pulling_data["zR_t"] = left_wrap(pulling_data["zR_t"], symmetric_center)
+
+    else:
+        raise ValueError("Really, no wrap?")
