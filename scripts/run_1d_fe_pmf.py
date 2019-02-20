@@ -19,13 +19,13 @@ from utils import right_wrap, left_wrap
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( "--pulling_data_nc_file", type=str, default="work_100rep_200traj.nc")
+parser.add_argument( "--pulling_data_nc_file", type=str, default="work_100rep_400traj.nc")
 
 # to determine pmf bin
-parser.add_argument( "--other_pulling_data_nc_files", type=str, default="../m1.5_to_p1.5/work_100rep_400traj.nc")
+parser.add_argument( "--other_pulling_data_nc_files", type=str, default="../m1.5_to_p1.5_backto_m1.5/work_100rep_200traj.nc")
 
 # number of data points to take for free energy calculations
-parser.add_argument( "--nfe_points", type=int, default=41)
+parser.add_argument( "--nfe_points", type=int, default=21)
 
 # number of bins for the PMF
 parser.add_argument( "--pmf_nbins", type=int, default=20)
@@ -41,7 +41,7 @@ parser.add_argument( "--system_type", type=str, default="asymmetric")
 
 # for symmetric systems, asymmetric protocol means pulling only one half of the pmf
 # symmetric or asymmetric
-parser.add_argument( "--protocol_type", type=str, default="symmetric")
+parser.add_argument( "--protocol_type", type=str, default="asymmetric")
 
 # include uf, ur, b, s
 parser.add_argument( "--estimators",  type=str, default="uf b s")
