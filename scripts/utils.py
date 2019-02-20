@@ -269,16 +269,25 @@ def left_replicate_pmf(first_half):
     return np.hstack([second_half, first_half])
 
 
-def stride(end, n):
+def stride_index(lambda_F, lambda_R, n):
     """
-    between 0 and end-1
-    :param start:
-    :param end:
-    :param n:
-    :return:
+    calculate indices_F and indices_R such that lambda_F[indices_F] == lambda_R[indices_R][::-1]
+    or lambda_F[indices_F][::-1] == lambda_R[indices_R]
+
+    :param lambda_F: 1d ndarray of float
+    :param lambda_R: 1d ndarray of float
+    :param n: int
+    :return (indices_F, indices_R): each is 1d ndarray of int
     """
-    results = np.linspace(0, end-1, n)
-    results = np.round(results)
-    results = results.astype(np.int)
-    return results
+    indices_F = np.linspace(0, lambda_F.shape[0] - 1, n)
+    indices_F = np.round(indices_F)
+    indices_F = indices_F.astype(np.int)
+
+    indices_R = lambda_R.shape[0] - 1 - indices_F
+    indices_R = indices_R[::-1]
+
+    if not np.allclose(lambda_F[indices_F], lambda_R[indices_R][::-1]):
+        raise IndexError("The condition lambda_F[indices_F] == lambda_R[indices_R][::-1] is not satisfied.")
+    return indices_F, indices_R
+
 
