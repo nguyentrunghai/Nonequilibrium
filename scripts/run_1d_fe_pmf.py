@@ -8,7 +8,7 @@ from __future__ import division
 
 import argparse
 
-import numpy as np
+import netCDF4 as nc
 
 from _IO import load_1d_sim_results
 from utils import stride_lambda_indices
