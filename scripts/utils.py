@@ -269,7 +269,7 @@ def left_replicate_pmf(first_half):
     return np.hstack([second_half, first_half])
 
 
-def stride_index(lambda_F, lambda_R, n):
+def stride_lambda_indices(lambda_F, lambda_R, n):
     """
     calculate indices_F and indices_R such that lambda_F[indices_F] == lambda_R[indices_R][::-1]
     or lambda_F[indices_F][::-1] == lambda_R[indices_R]
