@@ -8,6 +8,8 @@ from __future__ import division
 
 import argparse
 
+import numpy as np
+
 from _IO import load_1d_sim_results
 from utils import stride_lambda_indices
 from utils import equal_spaced_bins
