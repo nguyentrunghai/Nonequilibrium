@@ -9,25 +9,25 @@ from __future__ import division
 import argparse
 
 from _IO import load_1d_sim_results
-from utils import stride
+from utils import stride_lambda_indices
 from utils import equal_spaced_bins
 from utils import right_wrap, left_wrap
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( "--pulling_data_nc_file", type=str, default="work.nc")
+parser.add_argument( "--pulling_data_nc_file", type=str, default="/home/tnguye46/nonequilibrium/1d/sym/simulation/m1.5_to_p1.5/work_100rep_200traj.nc")
 
 # to determine pmf bin
-parser.add_argument( "--other_pulling_data_nc_files", type=str, default="other_work_files.nc")
+parser.add_argument( "--other_pulling_data_nc_files", type=str, default="/home/tnguye46/nonequilibrium/1d/sym/simulation/m1.5_to_0/work_100rep_400traj.nc")
 
 # number of data points to take for free energy calculations
-parser.add_argument( "--nfe_points", type=int, default=11)
+parser.add_argument( "--nfe_points", type=int, default=21)
 
 # number of bins for the PMF
-parser.add_argument( "--pmf_nbins", type=int, default=10)
+parser.add_argument( "--pmf_nbins", type=int, default=20)
 
 # some number or -999 (means None)
-parser.add_argument( "--symmetric_center",   type=float, default=-999)
+parser.add_argument( "--symmetric_center",   type=float, default=0)
 
 # which side to wrap z, left, right or none
 parser.add_argument( "--side_to_wrap_z",   type=str, default="none")
@@ -77,8 +77,13 @@ if not all(e in ["uf", "ur", "b", "s"] for e in estimators):
 
 pulling_data = load_1d_sim_results(args.pulling_data_nc_file)
 
-timeseries_indices = stride(pulling_data["lambda_F"].shape[0], args.nfe_points)
-print("timeseries_indices", timeseries_indices)
+timeseries_indices_F, timeseries_indices_R = stride_lambda_indices(pulling_data["lambda_F"],
+                                                                   pulling_data["lambda_R"],
+                                                                   args.nfe_points)
+print("timeseries_indices_F", timeseries_indices_F)
+print("timeseries_indices_R", timeseries_indices_R)
+print("Reduced lambda_F", pulling_data["lambda_F"][timeseries_indices_F])
+print("Reduced lambda_R", pulling_data["lambda_R"][timeseries_indices_R])
 
 if args.symmetric_center == -999:
     symmetric_center = None
