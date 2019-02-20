@@ -7,7 +7,7 @@ import numpy as np
 from estimators import uni_df_t, uni_pmf
 from estimators import bi_df_t, bi_pmf
 from estimators import sym_est_df_t_v1, sym_est_pmf_v1
-from estimators import sym_est_df_t_v2, sym_est_pmf_v2
+#from estimators import sym_est_df_t_v2, sym_est_pmf_v2
 
 
 def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
@@ -29,9 +29,9 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     if ntrajs_per_block % 2 != 0:
         raise ValueError("Number of trajs per block must be even")
 
-    if which_data != "F":
+    if which_data == "F":
         total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
-    elif which_data != "R":
+    elif which_data == "R":
         total_ntrajs_in_data = pulling_data["wR_t"].shape[0]
 
     total_ntrajs_requested = nblocks * ntrajs_per_block
@@ -149,8 +149,8 @@ def unidirectional_pmf(pulling_data,
 
 
 def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
-                     timeseries_indices,
-                      nbootstraps=0):
+                    timeseries_indices,
+                    nbootstraps=0):
     """
     :param pulling_data: dict returned by _IO.load_1d_sim_results()
     :param nblocks: int, number of blocks of trajectories
@@ -179,7 +179,7 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
 
     free_energies["ks"] = pulling_data["ks"]
     free_energies["dt"] = pulling_data["dt"]
-    free_energies["lambda_F"] = pulling_data["lambda_F"][timeseries_indices]
+    free_energies["lambdas"] = pulling_data["lambda_F"][timeseries_indices]
 
     wF_t = pulling_data["wF_t"][: total_ntrajs_requested // 2, timeseries_indices]
     wR_t = pulling_data["wR_t"][: total_ntrajs_requested // 2, timeseries_indices]
@@ -253,7 +253,7 @@ def bidirectional_pmf(pulling_data,
     for block in range(nblocks):
         left_bound = block * (ntrajs_per_block // 2)
         right_bound = (block + 1) * (ntrajs_per_block // 2)
-        , pmfs["main_estimates"]["block_%d" % block] = bi_pmf(zF_t[left_bound : right_bound],
+        _, pmfs["main_estimates"]["block_%d" % block] = bi_pmf(zF_t[left_bound : right_bound],
                                                               wF_t[left_bound : right_bound],
                                                               zR_t[left_bound : right_bound],
                                                               wR_t[left_bound : right_bound],
