@@ -26,7 +26,7 @@ parser.add_argument( "--other_pulling_data_nc_files", type=str, default="/home/t
 parser.add_argument( "--nfe_points", type=int, default=11)
 
 # number of bins for the PMF
-parser.add_argument( "--pmf_nbins", type=int, default=10)
+parser.add_argument( "--pmf_nbins", type=int, default=20)
 
 # some number or -999 (means None)
 parser.add_argument( "--symmetric_center",   type=float, default=0)
