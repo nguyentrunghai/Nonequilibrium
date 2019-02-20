@@ -2,6 +2,8 @@
 TODO:
 if lambda_F[timeseries_indices] gives the same elements (but in opposite direction) as
 lambda_R[timeseries_indices]
+
+TODO:
 """
 from __future__ import print_function
 from __future__ import division
@@ -17,29 +19,29 @@ from utils import right_wrap, left_wrap
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( "--pulling_data_nc_file", type=str, default="/home/tnguye46/nonequilibrium/1d/sym/simulation/m1.5_to_0/work_100rep_400traj.nc")
+parser.add_argument( "--pulling_data_nc_file", type=str, default="work_100rep_200traj.nc")
 
 # to determine pmf bin
-parser.add_argument( "--other_pulling_data_nc_files", type=str, default="/home/tnguye46/nonequilibrium/1d/sym/simulation/m1.5_to_p1.5/work_100rep_200traj.nc")
+parser.add_argument( "--other_pulling_data_nc_files", type=str, default="../m1.5_to_p1.5/work_100rep_400traj.nc")
 
 # number of data points to take for free energy calculations
-parser.add_argument( "--nfe_points", type=int, default=11)
+parser.add_argument( "--nfe_points", type=int, default=41)
 
 # number of bins for the PMF
 parser.add_argument( "--pmf_nbins", type=int, default=20)
 
 # some number or -999 (means None)
-parser.add_argument( "--symmetric_center",   type=float, default=0)
+parser.add_argument( "--symmetric_center",   type=float, default=-999)
 
 # which side to wrap z, left, right or none
 parser.add_argument( "--side_to_wrap_z",   type=str, default="none")
 
 # symmetric or asymmetric
-parser.add_argument( "--system_type", type=str, default="symmetric")
+parser.add_argument( "--system_type", type=str, default="asymmetric")
 
 # for symmetric systems, asymmetric protocol means pulling only one half of the pmf
 # symmetric or asymmetric
-parser.add_argument( "--protocol_type", type=str, default="asymmetric")
+parser.add_argument( "--protocol_type", type=str, default="symmetric")
 
 # include uf, ur, b, s
 parser.add_argument( "--estimators",  type=str, default="uf b s")
