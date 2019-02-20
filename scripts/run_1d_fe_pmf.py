@@ -1,4 +1,7 @@
 """
+TODO:
+if lambda_F[timeseries_indices] gives the same elements (but in opposite direction) as
+lambda_R[timeseries_indices]
 """
 from __future__ import print_function
 from __future__ import division
@@ -8,6 +11,7 @@ import argparse
 from _IO import load_1d_sim_results
 from utils import stride
 from utils import equal_spaced_bins
+from utils import right_wrap, left_wrap
 
 parser = argparse.ArgumentParser()
 
@@ -88,6 +92,11 @@ print("Data Files to consider for calculating for PMF bins:")
 print("\n".join(pulling_files))
 
 pmf_bin_edges = _pmf_bin_edges(pulling_files, args.pmf_nbins, symmetric_center)
+
+# this means pulling is done only half way through
 if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
-    # mean
+    print("Halve pmf_bin_edges")
+    half_len = pmf_bin_edges.shape[0] // 2 + 1
+    pmf_bin_edges = pmf_bin_edges[:half_len]
+
 print("pmf_bin_edges", pmf_bin_edges)
