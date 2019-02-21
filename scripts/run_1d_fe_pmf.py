@@ -78,7 +78,7 @@ def _pmf_bin_edges(pulling_files, nbins, symmetric_center):
     return equal_spaced_bins(trajs, nbins, symmetric_center=symmetric_center)
 
 
-def num_fe(pulling_data, system_type):
+def num_fe(pulling_data, system_type, timeseries_indices):
     if system_type == "symmetric":
         U = U_sym
     elif system_type == "asymmetric":
@@ -86,7 +86,7 @@ def num_fe(pulling_data, system_type):
 
     ks = pulling_data["ks"]
     dt = pulling_data["dt"]
-    lambda_F = pulling_data["lambda_F"]
+    lambda_F = pulling_data["lambda_F"][timeseries_indices]
 
     num_df_t = numerical_df_t(U, ks, lambda_F, limit=5.)
 
@@ -185,7 +185,7 @@ if args.system_type == "symmetric" and args.protocol_type == "symmetric":
 else:
     symmetrize_pmf = False
 
-num_free_energies = num_fe(pulling_data, args.system_type)
+num_free_energies = num_fe(pulling_data, args.system_type, timeseries_indices_F)
 exact_pmf = _exact_pmf(args.system_type, pmf_bin_edges)
 
 pickle.dump(num_free_energies, open("fe_" + args.protocol_type + "_numerical" + ".pkl", "w"))
