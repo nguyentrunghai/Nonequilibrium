@@ -92,8 +92,7 @@ def num_fe(pulling_data, system_type, timeseries_indices):
 
     free_energy = {}
     free_energy["lambdas"] = lambda_F
-    free_energy["pulling_times"] = np.arange(len(lambda_F))*dt
-    free_energy["fes"] = num_df_t
+    free_energy["fe"] = num_df_t
 
     return free_energy
 
@@ -231,6 +230,8 @@ for ntrajs in ntrajs_list:
                   pmf_bin_edges, V,
                   symmetrize_pmf,
                   nbootstraps=args.nbootstraps)
+        else:
+            raise ValueError("Unrecognized estimator")
 
         out_file = args.protocol_type + "_" + estimator + "_ntrajs_%d.pkl"%ntrajs
         print("Saving " + out_file)
