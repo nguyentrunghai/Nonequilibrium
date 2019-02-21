@@ -165,7 +165,7 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     if ntrajs_per_block % 2 != 0:
         raise ValueError("Number of trajs per block must be even")
 
-    total_ntrajs_in_data = pulling_data["wF_t"].shape[0] + pulling_data["wR_t"].shape[0]
+    total_ntrajs_in_data = (pulling_data["wF_t"].shape[0] + pulling_data["wR_t"].shape[0]) // 2
 
     total_ntrajs_requested = nblocks * ntrajs_per_block
 
