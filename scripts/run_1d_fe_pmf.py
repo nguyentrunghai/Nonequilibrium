@@ -3,19 +3,27 @@ TODO:
 if lambda_F[timeseries_indices] gives the same elements (but in opposite direction) as
 lambda_R[timeseries_indices]
 
-TODO:
+TODO: Check whether we need symmetrize_pmf
 """
 from __future__ import print_function
 from __future__ import division
 
 import argparse
+import pickle
 
 import netCDF4 as nc
+import numpy as np
 
 from _IO import load_1d_sim_results
 from utils import stride_lambda_indices
 from utils import equal_spaced_bins
 from utils import right_wrap, left_wrap
+
+from models_1d import U0_sym, U0_asym, V, U_sym, U_asym, numerical_df_t
+
+from _fe_pmf import unidirectional_fe, unidirectional_pmf
+from _fe_pmf import bidirectional_fe, bidirectional_pmf
+from _fe_pmf import symmetric_fe, symmetric_pmf
 
 parser = argparse.ArgumentParser()
 
@@ -52,6 +60,9 @@ parser.add_argument( "--nblocks",  type=int, default=10)
 # numbers of trajectories
 parser.add_argument( "--ntrajs_per_block",  type=str, default="10 20 30")
 
+# number of bootstrap samples
+parser.add_argument( "--nbootstraps",  type=int, default=100)
+
 args = parser.parse_args()
 
 
@@ -84,6 +95,12 @@ pulling_data = load_1d_sim_results(args.pulling_data_nc_file)
 timeseries_indices_F, timeseries_indices_R = stride_lambda_indices(pulling_data["lambda_F"],
                                                                    pulling_data["lambda_R"],
                                                                    args.nfe_points)
+
+ntrajs_list = [int(s) for s in args.ntrajs_per_block.split()]
+total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
+if np.any(np.array(ntrajs_list) > total_ntrajs_in_data):
+    raise ValueError("Number of trajectories requested is larger than available in data (%d)"%total_ntrajs_in_data)
+
 print("timeseries_indices_F", timeseries_indices_F)
 print("timeseries_indices_R", timeseries_indices_R)
 print("Reduced lambda_F", pulling_data["lambda_F"][timeseries_indices_F])
@@ -124,3 +141,56 @@ if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
 
     else:
         raise ValueError("Really, no wrap?")
+
+# when both system and protocol are symmetric, use symmetrize_pmf=True, in the s1, s2 estimators
+if args.system_type == "symmetric" and args.protocol_type == "symmetric":
+    symmetrize_pmf = True
+else:
+    symmetrize_pmf = False
+
+
+for ntrajs in ntrajs_list:
+    for estimator in estimators:
+
+        if estimator == "uf" or estimator == "ur":
+            if estimator == "uf":
+                which_data = "F"
+                timeseries_indices = timeseries_indices_F
+            else:
+                which_data = "R"
+                timeseries_indices = timeseries_indices_R
+
+            free_energies = unidirectional_fe(pulling_data, args.nblocks, ntrajs,
+                                              timeseries_indices,
+                                              which_data,
+                                              nbootstraps=args.nbootstraps)
+
+            pmfs = unidirectional_pmf(pulling_data, args.nblocks, ntrajs,
+                                      which_data,
+                                      pmf_bin_edges, V,
+                                      nbootstraps=args.nbootstraps)
+
+        elif estimator == "b":
+            free_energies = bidirectional_fe(pulling_data, args.nblocks, ntrajs,
+                                             timeseries_indices_F,
+                                             nbootstraps=args.nbootstraps)
+
+            pmfs = bidirectional_pmf(pulling_data, args.nblocks, ntrajs,
+                                     pmf_bin_edges, V,
+                                     nbootstraps=args.nbootstraps)
+
+        elif estimator == "s":
+            free_energies = symmetric_fe(pulling_data, args.nblocks, ntrajs,
+                                         timeseries_indices_F,
+                                         nbootstraps=args.nbootstraps)
+
+            pmfs = symmetric_pmf(pulling_data, args.nblocks, ntrajs,
+                  pmf_bin_edges, V,
+                  symmetrize_pmf,
+                  nbootstraps=args.nbootstraps)
+
+        out_file = args.protocol_type + "_" + estimator + "_ntrajs_%d.pkl"%ntrajs
+        print("Saving " + out_file)
+        pickle.dump({"free_energies" : free_energies, "pmfs" : pmfs}, open(out_file, "w"))
+
+
