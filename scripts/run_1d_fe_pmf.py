@@ -62,7 +62,7 @@ parser.add_argument( "--nblocks",  type=int, default=100)
 parser.add_argument( "--ntrajs_per_block",  type=str, default="50 100 150 200")
 
 # number of bootstrap samples
-parser.add_argument( "--nbootstraps",  type=int, default=100)
+parser.add_argument( "--nbootstraps",  type=int, default=2)
 
 args = parser.parse_args()
 
