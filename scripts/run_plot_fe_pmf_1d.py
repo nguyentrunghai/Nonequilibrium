@@ -13,11 +13,11 @@ from _plots import plot_lines
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--data_dir", type=str, default="simulation")
+parser.add_argument("--data_dir", type=str, default="./")
 
-parser.add_argument("--free_energies_pmfs_files", type=str, default="fe1 fe2")
-parser.add_argument("--num_fe_file", type=str, default="num")
-parser.add_argument("--exact_pmf_file", type=str, default="exact")
+parser.add_argument("--free_energies_pmfs_files", type=str, default="symmetric_uf_ntrajs_200.pkl symmetric_b_ntrajs_200.pkl symmetric_s_ntrajs_200.pkl asymmetric_uf_ntrajs_400.pkl asymmetric_ur_ntrajs_400.pkl asymmetric_b_ntrajs_400.pkl")
+parser.add_argument("--num_fe_file", type=str, default="fe_symmetric_numerical.pkl")
+parser.add_argument("--exact_pmf_file", type=str, default="pmf_symmetric_exact.pkl")
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
@@ -28,6 +28,11 @@ parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
 
 args = parser.parse_args()
+
+
+def _first_to_zero(values):
+    return values - values[0]
+
 
 free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
@@ -51,6 +56,13 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     fe_ys = np.array(data["free_energies"]["main_estimates"].values())
     fe_y = fe_ys.mean(axis=0)
     fe_error = fe_ys.std(axis=0)
+
+    if label == "r_u":
+        fe_x = fe_x[::-1]
+        fe_y = fe_y[::-1]
+        fe_error = fe_error[::-1]
+
+    fe_y = _first_to_zero(fe_y)
     free_energies[label] = {"x":fe_x, "y":fe_y, "error":fe_error}
 
     pmf_x = bin_centers(data["pmfs"]["pmf_bin_edges"])
@@ -66,7 +78,7 @@ pmf_exact = pickle.load(open(exact_pmf_file , "r"))
 xs = []
 ys = []
 yerrs = []
-for label in free_energies:
+for label in data_estimator_pairs:
     xs.append(free_energies[label]["x"])
     ys.append(free_energies[label]["y"])
     yerrs.append(free_energies[label]["error"])
