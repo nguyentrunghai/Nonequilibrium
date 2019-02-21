@@ -17,6 +17,7 @@ import numpy as np
 from _IO import load_1d_sim_results
 from utils import stride_lambda_indices
 from utils import equal_spaced_bins
+from utils import bin_centers
 from utils import right_wrap, left_wrap
 
 from models_1d import U0_sym, U0_asym, V, U_sym, U_asym, numerical_df_t
@@ -75,6 +76,42 @@ def _pmf_bin_edges(pulling_files, nbins, symmetric_center):
         trajs.append(zF_t)
         trajs.append(zR_t)
     return equal_spaced_bins(trajs, nbins, symmetric_center=symmetric_center)
+
+
+def num_fe(pulling_data, system_type):
+    if system_type == "symmetric":
+        U = U_sym
+    elif system_type == "asymmetric":
+        U = U_asym
+
+    ks = pulling_data["ks"]
+    dt = pulling_data["dt"]
+    lambda_F = pulling_data["lambda_F"]
+
+    num_df_t = numerical_df_t(U, ks, lambda_F, limit=5.)
+
+    free_energy = {}
+    free_energy["lambdas"] = lambda_F
+    free_energy["pulling_times"] = np.arange(len(lambda_F))*dt
+    free_energy["fes"] = num_df_t
+
+    return free_energy
+
+
+def _exact_pmf(system_type, pmf_bin_edges):
+    if system_type == "symmetric":
+        U0 = U0_sym
+    elif system_type == "asymmetric":
+        U0 = U0_asym
+
+    centers = bin_centers(pmf_bin_edges)
+    exact_pmf = U0(centers)
+
+    pmf = {}
+    pmf["pmf_bin_edges"] = pmf_bin_edges
+    pmf["pmfs"] = exact_pmf
+
+    return pmf
 
 
 if args.system_type not in ["symmetric", "asymmetric"]:
@@ -147,6 +184,12 @@ if args.system_type == "symmetric" and args.protocol_type == "symmetric":
     symmetrize_pmf = True
 else:
     symmetrize_pmf = False
+
+num_free_energies = num_fe(pulling_data, args.system_type)
+exact_pmf = _exact_pmf(args.system_type, pmf_bin_edges)
+
+pickle.dump(num_free_energies, open("fe_" + args.protocol_type + "_numerical" + ".pkl", "w"))
+pickle.dump(exact_pmf, open("pmf_" + args.protocol_type + "_exact" + ".pkl", "w"))
 
 
 for ntrajs in ntrajs_list:
