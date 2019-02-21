@@ -202,7 +202,7 @@ pickle.dump(exact_pmf, open(args.pmf_out_prefix + "_exact" + ".pkl", "w"))
 if args.system_type == "symmetric" and args.protocol_type == "symmetric":
     symmetrize_pmf = True
 else:
-    symmetrize_pmf = True
+    symmetrize_pmf = False
 
 print("symmetrize_pmf", symmetrize_pmf)
 
