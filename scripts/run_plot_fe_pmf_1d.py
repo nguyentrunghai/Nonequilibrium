@@ -9,6 +9,7 @@ import os
 import numpy as np
 
 from utils import bin_centers
+from _plots import plot_lines
 
 parser = argparse.ArgumentParser()
 
@@ -19,6 +20,12 @@ parser.add_argument("--num_fe_file", type=str, default="num")
 parser.add_argument("--exact_pmf_file", type=str, default="exact")
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
+
+parser.add_argument("--xlabel", type=str, default="$\lambda$")
+parser.add_argument("--ylabel", type=str, default="$\Delta F_{\lambda}$")
+
+parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
+parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
 
 args = parser.parse_args()
 
@@ -51,4 +58,36 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     pmf_y = pmf_ys.mean(axis=0)
     pmf_error = pmf_ys.std(axis=0)
     pmfs[label] = {"x":pmf_x, "y":pmf_y, "error":pmf_error}
-    
+
+fe_num = pickle.load(open(num_fe_file, "r"))
+pmf_exact = pickle.load(open(exact_pmf_file , "r"))
+
+# plot free energies
+xs = []
+ys = []
+yerrs = []
+for label in free_energies:
+    xs.append(free_energies[label]["x"])
+    ys.append(free_energies[label]["y"])
+    yerrs.append(free_energies[label]["error"])
+
+xs.append(fe_num["lambdas"])
+ys.append(fe_num["fe"])
+yerrs.append(None)
+
+MARKERS = ["<", ">", "^", "v", "s", "d", "."]
+
+plot_lines(xs, ys, yerrs=yerrs,
+           xlabel=args.xlabel, ylabel=args.ylabel,
+           out=args.fe_out,
+           legends=data_estimator_pairs + ["num"],
+           markers=MARKERS,
+           legend_pos="best",
+           legend_fontsize=7,
+           xlimits=None,
+           ylimits=None,
+           lw=1.0,
+           markersize=4,
+           alpha=1.,
+           n_xtics=8,
+           n_ytics=8)
