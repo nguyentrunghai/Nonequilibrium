@@ -28,10 +28,10 @@ from _fe_pmf import symmetric_fe, symmetric_pmf
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( "--pulling_data_nc_file", type=str, default="work_100rep_400traj.nc")
+parser.add_argument( "--pulling_data_nc_file", type=str, default="../../simulation/m1.5_to_p1.5/work_100rep_200traj.nc")
 
 # to determine pmf bin
-parser.add_argument( "--other_pulling_data_nc_files", type=str, default="../m1.5_to_p1.5_backto_m1.5/work_100rep_200traj.nc")
+parser.add_argument( "--other_pulling_data_nc_files", type=str, default="../../simulation/m1.5_to_0/work_100rep_400traj.nc")
 
 # number of data points to take for free energy calculations
 parser.add_argument( "--nfe_points", type=int, default=21)
@@ -46,20 +46,20 @@ parser.add_argument( "--symmetric_center",   type=float, default=0)
 parser.add_argument( "--side_to_wrap_z",   type=str, default="none")
 
 # symmetric or asymmetric
-parser.add_argument( "--system_type", type=str, default="asymmetric")
+parser.add_argument( "--system_type", type=str, default="symmetric")
 
 # for symmetric systems, asymmetric protocol means pulling only one half of the pmf
 # symmetric or asymmetric
-parser.add_argument( "--protocol_type", type=str, default="asymmetric")
+parser.add_argument( "--protocol_type", type=str, default="symmetric")
 
 # include uf, ur, b, s
 parser.add_argument( "--estimators",  type=str, default="uf b s")
 
 # number of blocks of trajectories
-parser.add_argument( "--nblocks",  type=int, default=10)
+parser.add_argument( "--nblocks",  type=int, default=100)
 
 # numbers of trajectories
-parser.add_argument( "--ntrajs_per_block",  type=str, default="10 20 30")
+parser.add_argument( "--ntrajs_per_block",  type=str, default="50 100 150 200")
 
 # number of bootstrap samples
 parser.add_argument( "--nbootstraps",  type=int, default=100)
