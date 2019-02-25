@@ -134,8 +134,9 @@ for label in data_estimator_pairs:
     ys.append(pmfs[label]["y"][start_pmf_ind : end_pmf_ind])
     yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind])
 
-xs.append(bin_centers(pmf_exact["pmf_bin_edges"]))
-ys.append(pmf_exact["pmf"])
+end_pmf_ind = len(pmfs[label]["x"]) - start_pmf_ind
+xs.append(bin_centers(pmf_exact["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
+ys.append(pmf_exact["pmf"][start_pmf_ind : end_pmf_ind])
 yerrs.append(None)
 
 plot_lines(xs, ys, yerrs=yerrs,
