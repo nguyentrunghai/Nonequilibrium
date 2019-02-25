@@ -108,7 +108,7 @@ def _exact_pmf(system_type, pmf_bin_edges):
 
     pmf = {}
     pmf["pmf_bin_edges"] = pmf_bin_edges
-    pmf["pmfs"] = exact_pmf
+    pmf["pmf"] = exact_pmf
 
     return pmf
 
