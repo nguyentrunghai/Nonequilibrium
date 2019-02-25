@@ -26,6 +26,9 @@ parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$")
 
 parser.add_argument("--pmf_xlabel", type=str, default="$z$")
 parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
+# for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
+# for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
+parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
 parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
@@ -117,13 +120,19 @@ plot_lines(xs, ys, yerrs=yerrs,
 
 
 # plot pmfs
+start_pmf_ind = args.bin_ind_to_start_to_plot
+
 xs = []
 ys = []
 yerrs = []
 for label in data_estimator_pairs:
-    xs.append(pmfs[label]["x"])
-    ys.append(pmfs[label]["y"])
-    yerrs.append(pmfs[label]["error"])
+    if label not in ["s_u", "s_b", "s_s"]:
+        end_pmf_ind = len(pmfs[label]["x"]) - start_pmf_ind
+    else:
+        end_pmf_ind = len(pmfs[label]["x"])
+    xs.append(pmfs[label]["x"][start_pmf_ind : end_pmf_ind])
+    ys.append(pmfs[label]["y"][start_pmf_ind : end_pmf_ind])
+    yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind])
 
 xs.append(bin_centers(pmf_exact["pmf_bin_edges"]))
 ys.append(pmf_exact["pmf"])
