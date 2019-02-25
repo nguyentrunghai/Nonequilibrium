@@ -113,7 +113,9 @@ def plot_lines(xs, ys, xerrs=None, yerrs=None, xlabel=None, ylabel=None, out="ou
         ax.set_yscale("log")
 
     if legends is not None:
-        plt.legend(legends, frameon=False, loc=legend_pos, fancybox=False, fontsize=legend_fontsize)
+        plt.legend(legends, frameon=False, loc=legend_pos,
+                   fancybox=False, fontsize=legend_fontsize,
+                   ncol=2)
 
     plt.tight_layout()
     plt.savefig(out, dpi=dpi)
