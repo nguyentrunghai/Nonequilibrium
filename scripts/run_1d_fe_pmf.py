@@ -28,10 +28,10 @@ from _fe_pmf import symmetric_fe, symmetric_pmf
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( "--pulling_data_nc_file", type=str, default="../../simulation/m1.5_to_p1.5/work_100rep_200traj.nc")
+parser.add_argument( "--pulling_data_nc_file", type=str, default="work.nc")
 
 # to determine pmf bin
-parser.add_argument( "--other_pulling_data_nc_files", type=str, default="../../simulation/m1.5_to_0/work_100rep_400traj.nc")
+parser.add_argument( "--other_pulling_data_nc_files", type=str, default="work.nc")
 
 # number of data points to take for free energy calculations
 parser.add_argument( "--nfe_points", type=int, default=21)
@@ -62,7 +62,7 @@ parser.add_argument( "--nblocks",  type=int, default=100)
 parser.add_argument( "--ntrajs_per_block",  type=str, default="50 100 150 200")
 
 # number of bootstrap samples
-parser.add_argument( "--nbootstraps",  type=int, default=2)
+parser.add_argument( "--nbootstraps",  type=int, default=10)
 
 args = parser.parse_args()
 
