@@ -36,6 +36,12 @@ parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
 parser.add_argument("--legend_ncol", type=int, default=3)
 
+parser.add_argument("--xlimits_fe", type=str, default="None")
+parser.add_argument("--ylimits_fe", type=str, default="None")
+
+parser.add_argument("--xlimits_pmf", type=str, default="None")
+parser.add_argument("--ylimits_pmf", type=str, default="None")
+
 parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
 
@@ -109,6 +115,16 @@ xs.append(fe_num["lambdas"])
 ys.append(fe_num["fe"])
 yerrs.append(None)
 
+if args.xlimits_fe.lower() != "none":
+    xlimits_fe = [float(s) for s in args.xlimits_fe.split()]
+else:
+    xlimits_fe = None
+
+if args.ylimits_fe.lower() != "none":
+    ylimits_fe = [float(s) for s in args.ylimits_fe.split()]
+else:
+    ylimits_fe = None
+
 MARKERS = ["<", ">", "^", "v", "s", "d", "."]
 
 plot_lines(xs, ys, yerrs=yerrs,
@@ -119,8 +135,8 @@ plot_lines(xs, ys, yerrs=yerrs,
            legend_ncol=args.legend_ncol,
            legend_fontsize=8,
            markers=MARKERS,
-           xlimits=None,
-           ylimits=None,
+           xlimits=xlimits_fe,
+           ylimits=ylimits_fe,
            lw=1.0,
            markersize=4,
            alpha=1.,
@@ -148,6 +164,16 @@ xs.append(bin_centers(pmf_exact["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
 ys.append(pmf_exact["pmf"][start_pmf_ind : end_pmf_ind])
 yerrs.append(None)
 
+if args.xlimits_pmf.lower() != "none":
+    xlimits_pmf = [float(s) for s in args.xlimits_pmf.split()]
+else:
+    xlimits_pmf = None
+
+if args.ylimits_pmf.lower() != "none":
+    ylimits_pmf = [float(s) for s in args.ylimits_pmf.split()]
+else:
+    ylimits_pmf = None
+
 plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.pmf_xlabel, ylabel=args.pmf_ylabel,
            out=args.pmf_out,
@@ -156,8 +182,8 @@ plot_lines(xs, ys, yerrs=yerrs,
            legend_pos="best",
            legend_fontsize=8,
            markers=MARKERS,
-           xlimits=None,
-           ylimits=None,
+           xlimits=xlimits_pmf,
+           ylimits=ylimits_pmf,
            lw=1.0,
            markersize=4,
            alpha=1.,
