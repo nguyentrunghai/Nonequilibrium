@@ -37,6 +37,10 @@ def _first_to_zero(values):
     return values - values[0]
 
 
+def _min_to_zero(values):
+    argmin = np.argmin(values)
+    return values - values[argmin]
+
 free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
 
@@ -72,6 +76,8 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     pmf_ys = np.array(data["pmfs"]["main_estimates"].values())
     pmf_y = pmf_ys.mean(axis=0)
     pmf_error = pmf_ys.std(axis=0)
+
+    pmf_y = _min_to_zero(pmf_y)
     pmfs[label] = {"x":pmf_x, "y":pmf_y, "error":pmf_error}
 
 
