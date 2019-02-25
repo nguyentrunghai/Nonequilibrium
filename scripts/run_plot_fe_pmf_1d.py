@@ -119,7 +119,7 @@ for label in data_estimator_pairs:
     ys.append(pmfs[label]["y"])
     yerrs.append(pmfs[label]["error"])
 
-xs.append(bin_center(pmf_exact["pmf_bin_edges"]))
+xs.append(bin_centers(pmf_exact["pmf_bin_edges"]))
 ys.append(pmf_exact["pmf"])
 yerrs.append(None)
 
