@@ -126,7 +126,7 @@ xs = []
 ys = []
 yerrs = []
 for label in data_estimator_pairs:
-    if label not in ["s_u", "s_b", "s_s"]:
+    if label in ["s_u", "s_b", "s_s"]:
         end_pmf_ind = len(pmfs[label]["x"]) - start_pmf_ind
     else:
         end_pmf_ind = len(pmfs[label]["x"])
@@ -134,7 +134,7 @@ for label in data_estimator_pairs:
     ys.append(pmfs[label]["y"][start_pmf_ind : end_pmf_ind])
     yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind])
 
-end_pmf_ind = len(pmfs[label]["x"]) - start_pmf_ind
+end_pmf_ind = len(pmf_exact["pmf"]) - start_pmf_ind
 xs.append(bin_centers(pmf_exact["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
 ys.append(pmf_exact["pmf"][start_pmf_ind : end_pmf_ind])
 yerrs.append(None)
