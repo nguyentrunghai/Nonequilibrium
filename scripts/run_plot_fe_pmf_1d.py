@@ -21,8 +21,11 @@ parser.add_argument("--exact_pmf_file", type=str, default="pmf_symmetric_exact.p
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
-parser.add_argument("--xlabel", type=str, default="$\lambda$")
-parser.add_argument("--ylabel", type=str, default="$\Delta F_{\lambda}$")
+parser.add_argument("--fe_xlabel", type=str, default="$\lambda$")
+parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$")
+
+parser.add_argument("--pmf_xlabel", type=str, default="$z$")
+parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
 
 parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
@@ -71,8 +74,10 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     pmf_error = pmf_ys.std(axis=0)
     pmfs[label] = {"x":pmf_x, "y":pmf_y, "error":pmf_error}
 
+
 fe_num = pickle.load(open(num_fe_file, "r"))
 pmf_exact = pickle.load(open(exact_pmf_file , "r"))
+
 
 # plot free energies
 xs = []
@@ -90,9 +95,38 @@ yerrs.append(None)
 MARKERS = ["<", ">", "^", "v", "s", "d", "."]
 
 plot_lines(xs, ys, yerrs=yerrs,
-           xlabel=args.xlabel, ylabel=args.ylabel,
+           xlabel=args.fe_xlabel, ylabel=args.fe_ylabel,
            out=args.fe_out,
            legends=data_estimator_pairs + ["num"],
+           markers=MARKERS,
+           legend_pos="best",
+           legend_fontsize=7,
+           xlimits=None,
+           ylimits=None,
+           lw=1.0,
+           markersize=4,
+           alpha=1.,
+           n_xtics=8,
+           n_ytics=8)
+
+
+# plot pmfs
+xs = []
+ys = []
+yerrs = []
+for label in data_estimator_pairs:
+    xs.append(pmfs[label]["x"])
+    ys.append(pmfs[label]["y"])
+    yerrs.append(pmfs[label]["error"])
+
+xs.append(bin_center(pmf_exact["pmf_bin_edges"]))
+ys.append(pmf_exact["pmf"])
+yerrs.append(None)
+
+plot_lines(xs, ys, yerrs=yerrs,
+           xlabel=args.pmf_xlabel, ylabel=args.pmf_ylabel,
+           out=args.pmf_out,
+           legends=data_estimator_pairs + ["exact"],
            markers=MARKERS,
            legend_pos="best",
            legend_fontsize=7,
