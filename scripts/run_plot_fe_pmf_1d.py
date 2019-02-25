@@ -30,6 +30,8 @@ parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
 # for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
 parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
+parser.add_argument("--legend_ncol", type=int, default=2)
+
 parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
 
@@ -107,9 +109,10 @@ plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.fe_xlabel, ylabel=args.fe_ylabel,
            out=args.fe_out,
            legends=data_estimator_pairs + ["num"],
-           markers=MARKERS,
            legend_pos="best",
-           legend_fontsize=7,
+           legend_ncol=args.legend_ncol,
+           legend_fontsize=8,
+           markers=MARKERS,
            xlimits=None,
            ylimits=None,
            lw=1.0,
@@ -143,9 +146,10 @@ plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.pmf_xlabel, ylabel=args.pmf_ylabel,
            out=args.pmf_out,
            legends=data_estimator_pairs + ["exact"],
-           markers=MARKERS,
+           legend_ncol=args.legend_ncol,
            legend_pos="best",
-           legend_fontsize=7,
+           legend_fontsize=8,
+           markers=MARKERS,
            xlimits=None,
            ylimits=None,
            lw=1.0,
