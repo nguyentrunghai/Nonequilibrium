@@ -3,8 +3,8 @@
 from __future__ import print_function
 from __future__ import division
 
-import seaborn as sns
-sns.set()
+#import seaborn as sns
+#sns.set()
 
 import argparse
 import pickle
