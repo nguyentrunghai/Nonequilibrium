@@ -9,7 +9,7 @@ MARKERS = ["v", "^", "<", ">", "o", ".", ",", "1", "2", "3", "4", "8", "s", "p",
 
 
 def plot_lines(xs, ys, xerrs=None, yerrs=None, xlabel=None, ylabel=None, out="out.pdf",
-               legends=None, legend_pos="upper left", legend_fontsize=8,
+               legends=None, legend_pos="upper left", legend_fontsize=8, legend_ncol=1,
                x_logscale=False,
                y_logscale=False,
                figure_size=(3.2, 3.2*6/8),
@@ -115,7 +115,7 @@ def plot_lines(xs, ys, xerrs=None, yerrs=None, xlabel=None, ylabel=None, out="ou
     if legends is not None:
         plt.legend(legends, frameon=False, loc=legend_pos,
                    fancybox=False, fontsize=legend_fontsize,
-                   ncol=2)
+                   ncol=legend_ncol)
 
     plt.tight_layout()
     plt.savefig(out, dpi=dpi)
