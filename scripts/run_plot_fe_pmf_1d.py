@@ -91,8 +91,10 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
 
 
 fe_num = pickle.load(open(num_fe_file, "r"))
-pmf_exact = pickle.load(open(exact_pmf_file , "r"))
+fe_num["fe"] = _first_to_zero(fe_num["fe"])
 
+pmf_exact = pickle.load(open(exact_pmf_file , "r"))
+pmf_exact["pmf"] = _min_to_zero(pmf_exact["pmf"])
 
 # plot free energies
 xs = []
