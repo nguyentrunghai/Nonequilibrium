@@ -30,7 +30,7 @@ parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
 # for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
 parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
-parser.add_argument("--legend_ncol", type=int, default=2)
+parser.add_argument("--legend_ncol", type=int, default=3)
 
 parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
