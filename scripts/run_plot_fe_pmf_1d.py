@@ -1,6 +1,6 @@
 """
 TODO:
-check from line 242
+check from line 242, something wrong with the pmf that makes matplotlib complains len(xs) != len(ys)
 """
 from __future__ import print_function
 from __future__ import division
@@ -185,6 +185,8 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     free_energies[label] = {"x":fe_x, "y":fe_y, "error":fe_error}
 
     pmf_x = bin_centers(data["pmfs"]["pmf_bin_edges"])
+    # TODO
+    print(label, data["pmfs"]["pmf_bin_edges"].shape)
     pmf_ys = np.array(data["pmfs"]["main_estimates"].values())
     pmf_y = pmf_ys.mean(axis=0)
     pmf_error = pmf_ys.std(axis=0)
@@ -241,6 +243,7 @@ plot_lines(xs, ys, yerrs=yerrs,
 
 
 # plot pmfs
+# TODO
 start_pmf_ind = args.bin_ind_to_start_to_plot
 
 xs = []
