@@ -48,15 +48,91 @@ parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
 
 args = parser.parse_args()
 
+
+def _first_to_zero(values):
+    return values - values[0]
+
+
 def _min_to_zero(values):
     argmin = np.argmin(values)
     return values - values[argmin]
 
 
-def right_replicate(first_half):
+def _right_replicate(first_half):
     second_half = first_half[:-1]
     second_half = second_half[::-1]
     return np.hstack([first_half, second_half])
+
+
+def _reverse_data_order(data):
+    data["free_energies"]["lambdas"] = data["free_energies"]["lambdas"][::-1]
+    data["pmfs"]["pmf_bin_edges"] = data["pmfs"]["pmf_bin_edges"][::-1]
+
+    for block in data["free_energies"]["main_estimates"]:
+        data["free_energies"]["main_estimates"][block] = data["free_energies"]["main_estimates"][block][::-1]
+
+    for block in data["pmfs"]["main_estimates"]:
+        data["pmfs"]["main_estimates"][block] = data["pmfs"]["main_estimates"][block][::-1]
+
+    bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["free_energies"][bootstrap_key]:
+            data["free_energies"][bootstrap_key][block] = data["free_energies"][bootstrap_key][block][::-1]
+
+    bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["pmfs"][bootstrap_key]:
+            data["pmfs"][bootstrap_key][block] = data["pmfs"][bootstrap_key][block][::-1]
+    return data
+
+
+def _right_replicate_data(data):
+    data["free_energies"]["lambdas"] = _right_replicate(data["free_energies"]["lambdas"])
+    data["pmfs"]["pmf_bin_edges"] = _right_replicate(data["pmfs"]["pmf_bin_edges"])
+
+    for block in data["free_energies"]["main_estimates"]:
+        data["free_energies"]["main_estimates"][block] = _right_replicate(data["free_energies"]["main_estimates"][block])
+
+    for block in data["pmfs"]["main_estimates"]:
+        data["pmfs"]["main_estimates"][block] = _right_replicate(data["pmfs"]["main_estimates"][block])
+
+    bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["free_energies"][bootstrap_key]:
+            data["free_energies"][bootstrap_key][block] = _right_replicate(data["free_energies"][bootstrap_key][block])
+
+    bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["pmfs"][bootstrap_key]:
+            data["pmfs"][bootstrap_key][block] = _right_replicate(data["pmfs"][bootstrap_key][block])
+    return data
+
+
+def _put_first_or_min_to_zero(data):
+    for block in data["free_energies"]["main_estimates"]:
+        data["free_energies"]["main_estimates"][block] = _first_to_zero(data["free_energies"]["main_estimates"][block])
+
+    for block in data["pmfs"]["main_estimates"]:
+        data["pmfs"]["main_estimates"][block] = _min_to_zero(data["pmfs"]["main_estimates"][block])
+
+    bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["free_energies"][bootstrap_key]:
+            data["free_energies"][bootstrap_key][block] = _first_to_zero(data["free_energies"][bootstrap_key][block])
+
+    bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["pmfs"][bootstrap_key]:
+            data["pmfs"][bootstrap_key][block] = _min_to_zero(data["pmfs"][bootstrap_key][block])
+
+    return data
+
 
 free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
@@ -73,37 +149,23 @@ if len(data_estimator_pairs) != len(free_energies_pmfs_files):
 
 free_energies = {}
 pmfs = {}
+
+all_data = {}
 for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file_name, "r"))
 
-    fe_x = data["free_energies"]["lambdas"]
+    # reverse the order
     if label == "r_u":
-        fe_x = fe_x[::-1]
+        data = _reverse_data_order(data)
+
+    # replica data on the right side
     if label in ["f_u", "r_u", "fr_b"]:
-        fe_x = right_replicate(fe_x)
+        data = _right_replicate_data(data)
 
-    # list of ndarrays of shape (, ntimeslices)
-    fe_ys = []
-    for fe in data["free_energies"]["main_estimates"].values():
-        fe_y = fe
-        if label == "r_u":
-            fe_y = fe_y[::-1]
-        if label in ["f_u", "r_u", "fr_b"]:
-            fe_y = right_replicate(fe_y)
-        fe_ys.append(fe_y)
-    fe_ys = np.array(fe_ys)
+    # put first or min to zero
+    data = _put_first_or_min_to_zero(data)
 
-
-    # list of ndarrays of shape (nblocks, ntimeslices)
-    fe_ys_bootstrap = [np.array(data["free_energies"][bootstrap].values())
-                       for bootstrap in data["free_energies"] if bootstrap.startswith("bootstrap_")]
-
-    if label == "r_u":
-        fe_x = fe_x[::-1]
-        fe_ys = fe_ys[:,::-1]
-        fe_ys_bootstrap = [fe[:,::-1] for fe in fe_ys_bootstrap]
-
-    if label in ["f_u", "r_u", "fr"]:
-        fe_x = right_replicate(fe_x)
+    all_data[label] = data
+    
 
 
