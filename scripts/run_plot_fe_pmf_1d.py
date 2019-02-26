@@ -1,4 +1,6 @@
 """
+TODO:
+check from line 242
 """
 from __future__ import print_function
 from __future__ import division
@@ -165,11 +167,12 @@ pmfs = {}
 for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file, "r"))
 
-    # put first or min to zero
-    data = _put_first_or_min_to_zero(data)
-
+    # reverse order
     if label == "r_u":
         data = _reverse_data_order(data)
+
+    # put first or min to zero
+    data = _put_first_or_min_to_zero(data)
 
     # replica data on the right side
     if label in ["f_u", "r_u", "fr_b"]:
@@ -248,13 +251,21 @@ for label in data_estimator_pairs:
         end_pmf_ind = len(pmfs[label]["x"]) - start_pmf_ind
     else:
         end_pmf_ind = len(pmfs[label]["x"])
-    xs.append(pmfs[label]["x"][start_pmf_ind : end_pmf_ind])
-    ys.append(pmfs[label]["y"][start_pmf_ind : end_pmf_ind])
-    yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind])
+    #xs.append(pmfs[label]["x"][start_pmf_ind : end_pmf_ind])
+    #ys.append(pmfs[label]["y"][start_pmf_ind : end_pmf_ind])
+    #yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind])
+    xs.append(pmfs[label]["x"])
+    ys.append(pmfs[label]["y"])
+    yerrs.append(pmfs[label]["error"])
+
 
 end_pmf_ind = len(pmf_exact["pmf"]) - start_pmf_ind
-xs.append(bin_centers(pmf_exact["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
-ys.append(pmf_exact["pmf"][start_pmf_ind : end_pmf_ind])
+#xs.append(bin_centers(pmf_exact["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
+#ys.append(pmf_exact["pmf"][start_pmf_ind : end_pmf_ind])
+#yerrs.append(None)
+
+xs.append(bin_centers(pmf_exact["pmf_bin_edges"]))
+ys.append(pmf_exact["pmf"])
 yerrs.append(None)
 
 if args.xlimits_pmf.lower() != "none":
