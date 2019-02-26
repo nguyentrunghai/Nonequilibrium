@@ -48,13 +48,15 @@ parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
 
 args = parser.parse_args()
 
-def _first_to_zero(values):
-    return values - values[0]
-
-
 def _min_to_zero(values):
     argmin = np.argmin(values)
     return values - values[argmin]
+
+
+def right_replicate(first_half):
+    second_half = first_half[:-1]
+    second_half = second_half[::-1]
+    return np.hstack([first_half, second_half])
 
 free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
@@ -75,4 +77,30 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file_name, "r"))
 
     fe_x = data["free_energies"]["lambdas"]
-    fe_ys = np.array(data["free_energies"]["main_estimates"].values())
+    if label == "r_u":
+        fe_x = fe_x[::-1]
+    if label in ["f_u", "r_u", "fr"]:
+        fe_x = right_replicate(fe_x)
+
+    # list of ndarrays of shape (, ntimeslices)
+    fe_ys = []
+    for fe in data["free_energies"]["main_estimates"].values():
+        if label == "r_u":
+            fe_y = fe[::-1]
+        if label in ["f_u", "r_u", "fr"]:
+            fe_y = right_replicate(fe_y)
+            
+
+    # list of ndarrays of shape (nblocks, ntimeslices)
+    fe_ys_bootstrap = [np.array(data["free_energies"][bootstrap].values())
+                       for bootstrap in data["free_energies"] if bootstrap.startswith("bootstrap_")]
+
+    if label == "r_u":
+        fe_x = fe_x[::-1]
+        fe_ys = fe_ys[:,::-1]
+        fe_ys_bootstrap = [fe[:,::-1] for fe in fe_ys_bootstrap]
+
+    if label in ["f_u", "r_u", "fr"]:
+        fe_x = right_replicate(fe_x)
+
+
