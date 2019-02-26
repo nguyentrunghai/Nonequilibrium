@@ -20,6 +20,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--data_dir", type=str, default="./")
 
+parser.add_argument( "--system_type", type=str, default="symmetric")
+
 parser.add_argument("--free_energies_pmfs_files", type=str, default="symmetric_uf_ntrajs_200.pkl symmetric_b_ntrajs_200.pkl symmetric_s_ntrajs_200.pkl asymmetric_uf_ntrajs_400.pkl asymmetric_ur_ntrajs_400.pkl asymmetric_b_ntrajs_400.pkl")
 parser.add_argument("--num_fe_file", type=str, default="fe_symmetric_numerical.pkl")
 parser.add_argument("--exact_pmf_file", type=str, default="pmf_symmetric_exact.pkl")
@@ -64,6 +66,12 @@ def _right_replicate(first_half):
     return np.hstack([first_half, second_half])
 
 
+def _right_replicate_and_negate(first_half):
+    second_half = first_half[:-1]
+    second_half = second_half[::-1]
+    return np.hstack([first_half, -second_half])
+
+
 def _reverse_data_order(data):
     data["free_energies"]["lambdas"] = data["free_energies"]["lambdas"][::-1]
     data["pmfs"]["pmf_bin_edges"] = data["pmfs"]["pmf_bin_edges"][::-1]
@@ -88,9 +96,15 @@ def _reverse_data_order(data):
     return data
 
 
-def _right_replicate_data(data):
-    data["free_energies"]["lambdas"] = _right_replicate(data["free_energies"]["lambdas"])
-    data["pmfs"]["pmf_bin_edges"] = _right_replicate(data["pmfs"]["pmf_bin_edges"])
+def _right_replicate_data(data, system_type):
+    if system_type == "symmetric":
+        data["free_energies"]["lambdas"] = _right_replicate_and_negate(data["free_energies"]["lambdas"])
+        data["pmfs"]["pmf_bin_edges"] = _right_replicate_and_negate(data["pmfs"]["pmf_bin_edges"])
+    elif system_type == "asymmetric":
+        data["free_energies"]["lambdas"] = _right_replicate(data["free_energies"]["lambdas"])
+        data["pmfs"]["pmf_bin_edges"] = _right_replicate(data["pmfs"]["pmf_bin_edges"])
+    else:
+        raise ValueError("Unrecognized system_type")
 
     for block in data["free_energies"]["main_estimates"]:
         data["free_energies"]["main_estimates"][block] = _right_replicate(data["free_energies"]["main_estimates"][block])
@@ -160,12 +174,12 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
 
     # replica data on the right side
     if label in ["f_u", "r_u", "fr_b"]:
-        data = _right_replicate_data(data)
+        data = _right_replicate_data(data, args.system_type)
 
     # put first or min to zero
     data = _put_first_or_min_to_zero(data)
 
     all_data[label] = data
-    
+
 
 
