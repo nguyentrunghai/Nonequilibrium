@@ -79,17 +79,20 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     fe_x = data["free_energies"]["lambdas"]
     if label == "r_u":
         fe_x = fe_x[::-1]
-    if label in ["f_u", "r_u", "fr"]:
+    if label in ["f_u", "r_u", "fr_b"]:
         fe_x = right_replicate(fe_x)
 
     # list of ndarrays of shape (, ntimeslices)
     fe_ys = []
     for fe in data["free_energies"]["main_estimates"].values():
+        fe_y = fe
         if label == "r_u":
-            fe_y = fe[::-1]
-        if label in ["f_u", "r_u", "fr"]:
+            fe_y = fe_y[::-1]
+        if label in ["f_u", "r_u", "fr_b"]:
             fe_y = right_replicate(fe_y)
-            
+        fe_ys.append(fe_y)
+    fe_ys = np.array(fe_ys)
+
 
     # list of ndarrays of shape (nblocks, ntimeslices)
     fe_ys_bootstrap = [np.array(data["free_energies"][bootstrap].values())
