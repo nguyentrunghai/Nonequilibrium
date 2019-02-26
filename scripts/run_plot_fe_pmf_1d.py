@@ -23,6 +23,8 @@ parser.add_argument("--free_energies_pmfs_files", type=str, default="symmetric_u
 parser.add_argument("--num_fe_file", type=str, default="fe_symmetric_numerical.pkl")
 parser.add_argument("--exact_pmf_file", type=str, default="pmf_symmetric_exact.pkl")
 
+parser.add_argument( "--system_type", type=str, default="symmetric")
+
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
 parser.add_argument("--fe_xlabel", type=str, default="$\lambda$")
@@ -56,6 +58,95 @@ def _min_to_zero(values):
     argmin = np.argmin(values)
     return values - values[argmin]
 
+
+def _right_replicate(first_half):
+    second_half = first_half[:-1]
+    second_half = second_half[::-1]
+    return np.hstack([first_half, second_half])
+
+
+def _right_replicate_and_negate(first_half):
+    second_half = first_half[:-1]
+    second_half = second_half[::-1]
+    return np.hstack([first_half, -second_half])
+
+
+def _reverse_data_order(data):
+    data["free_energies"]["lambdas"] = data["free_energies"]["lambdas"][::-1]
+    data["pmfs"]["pmf_bin_edges"] = data["pmfs"]["pmf_bin_edges"][::-1]
+
+    for block in data["free_energies"]["main_estimates"]:
+        data["free_energies"]["main_estimates"][block] = data["free_energies"]["main_estimates"][block][::-1]
+
+    for block in data["pmfs"]["main_estimates"]:
+        data["pmfs"]["main_estimates"][block] = data["pmfs"]["main_estimates"][block][::-1]
+
+    bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["free_energies"][bootstrap_key]:
+            data["free_energies"][bootstrap_key][block] = data["free_energies"][bootstrap_key][block][::-1]
+
+    bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["pmfs"][bootstrap_key]:
+            data["pmfs"][bootstrap_key][block] = data["pmfs"][bootstrap_key][block][::-1]
+    return data
+
+
+def _right_replicate_data(data, system_type):
+    if system_type == "symmetric":
+        data["free_energies"]["lambdas"] = _right_replicate_and_negate(data["free_energies"]["lambdas"])
+        data["pmfs"]["pmf_bin_edges"] = _right_replicate_and_negate(data["pmfs"]["pmf_bin_edges"])
+    elif system_type == "asymmetric":
+        data["free_energies"]["lambdas"] = _right_replicate(data["free_energies"]["lambdas"])
+        data["pmfs"]["pmf_bin_edges"] = _right_replicate(data["pmfs"]["pmf_bin_edges"])
+    else:
+        raise ValueError("Unrecognized system_type")
+
+    for block in data["free_energies"]["main_estimates"]:
+        data["free_energies"]["main_estimates"][block] = _right_replicate(data["free_energies"]["main_estimates"][block])
+
+    for block in data["pmfs"]["main_estimates"]:
+        data["pmfs"]["main_estimates"][block] = _right_replicate(data["pmfs"]["main_estimates"][block])
+
+    bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["free_energies"][bootstrap_key]:
+            data["free_energies"][bootstrap_key][block] = _right_replicate(data["free_energies"][bootstrap_key][block])
+
+    bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["pmfs"][bootstrap_key]:
+            data["pmfs"][bootstrap_key][block] = _right_replicate(data["pmfs"][bootstrap_key][block])
+    return data
+
+
+def _put_first_or_min_to_zero(data):
+    for block in data["free_energies"]["main_estimates"]:
+        data["free_energies"]["main_estimates"][block] = _first_to_zero(data["free_energies"]["main_estimates"][block])
+
+    for block in data["pmfs"]["main_estimates"]:
+        data["pmfs"]["main_estimates"][block] = _min_to_zero(data["pmfs"]["main_estimates"][block])
+
+    bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["free_energies"][bootstrap_key]:
+            data["free_energies"][bootstrap_key][block] = _first_to_zero(data["free_energies"][bootstrap_key][block])
+
+    bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    for bootstrap_key in bootstrap_keys:
+        for block in data["pmfs"][bootstrap_key]:
+            data["pmfs"][bootstrap_key][block] = _min_to_zero(data["pmfs"][bootstrap_key][block])
+
+    return data
+
+
 free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
 
@@ -74,17 +165,20 @@ pmfs = {}
 for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file, "r"))
 
+    # put first or min to zero
+    data = _put_first_or_min_to_zero(data)
+
+    if label == "r_u":
+        data = _reverse_data_order(data)
+
+    # replica data on the right side
+    if label in ["f_u", "r_u", "fr_b"]:
+        data = _right_replicate_data(data, args.system_type)
+
     fe_x = data["free_energies"]["lambdas"]
     fe_ys = np.array(data["free_energies"]["main_estimates"].values())
     fe_y = fe_ys.mean(axis=0)
     fe_error = fe_ys.std(axis=0)
-
-    if label == "r_u":
-        fe_x = fe_x[::-1]
-        fe_y = fe_y[::-1]
-        fe_error = fe_error[::-1]
-
-    fe_y = _first_to_zero(fe_y)
     free_energies[label] = {"x":fe_x, "y":fe_y, "error":fe_error}
 
     pmf_x = bin_centers(data["pmfs"]["pmf_bin_edges"])
@@ -92,7 +186,6 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     pmf_y = pmf_ys.mean(axis=0)
     pmf_error = pmf_ys.std(axis=0)
 
-    pmf_y = _min_to_zero(pmf_y)
     pmfs[label] = {"x":pmf_x, "y":pmf_y, "error":pmf_error}
 
 
