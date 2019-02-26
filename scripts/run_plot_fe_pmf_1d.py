@@ -34,7 +34,7 @@ parser.add_argument("--pmf_xlabel", type=str, default="$z$")
 parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
 # for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
 # for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
-parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
+parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=0)
 
 parser.add_argument("--legend_ncol", type=int, default=3)
 
