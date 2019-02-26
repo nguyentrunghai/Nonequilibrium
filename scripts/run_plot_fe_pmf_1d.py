@@ -1,6 +1,6 @@
 """
 TODO:
-check from line 242, something wrong with the pmf that makes matplotlib complains len(xs) != len(ys)
+for f_u, r_u and fr_b, do not replicate
 """
 from __future__ import print_function
 from __future__ import division
@@ -92,7 +92,7 @@ def _reverse_data_order(data):
         data["pmfs"]["main_estimates"][block] = data["pmfs"]["main_estimates"][block][::-1]
 
     bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
-    print(bootstrap_keys)
+    #print(bootstrap_keys)
     for bootstrap_key in bootstrap_keys:
         for block in data["free_energies"][bootstrap_key]:
             data["free_energies"][bootstrap_key][block] = data["free_energies"][bootstrap_key][block][::-1]
