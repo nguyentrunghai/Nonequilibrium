@@ -60,14 +60,22 @@ def _min_to_zero(values):
     return values - values[argmin]
 
 
-def _right_replicate(first_half):
-    second_half = first_half[:-1]
+def _right_replicate(first_half, center_include_in_first_half=True):
+    if center_include_in_first_half:
+        second_half = first_half[:-1]
+    else:
+        second_half = first_half
+
     second_half = second_half[::-1]
     return np.hstack([first_half, second_half])
 
 
-def _right_replicate_and_negate(first_half):
-    second_half = first_half[:-1]
+def _right_replicate_and_negate(first_half, center_include_in_first_half=True):
+    if center_include_in_first_half:
+        second_half = first_half[:-1]
+    else:
+        second_half = first_half
+
     second_half = second_half[::-1]
     return np.hstack([first_half, -second_half])
 
@@ -83,13 +91,13 @@ def _reverse_data_order(data):
         data["pmfs"]["main_estimates"][block] = data["pmfs"]["main_estimates"][block][::-1]
 
     bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
-    print(bootstrap_keys)
+    #print(bootstrap_keys)
     for bootstrap_key in bootstrap_keys:
         for block in data["free_energies"][bootstrap_key]:
             data["free_energies"][bootstrap_key][block] = data["free_energies"][bootstrap_key][block][::-1]
 
     bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
-    print(bootstrap_keys)
+    #print(bootstrap_keys)
     for bootstrap_key in bootstrap_keys:
         for block in data["pmfs"][bootstrap_key]:
             data["pmfs"][bootstrap_key][block] = data["pmfs"][bootstrap_key][block][::-1]
@@ -110,10 +118,11 @@ def _right_replicate_data(data, system_type):
         data["free_energies"]["main_estimates"][block] = _right_replicate(data["free_energies"]["main_estimates"][block])
 
     for block in data["pmfs"]["main_estimates"]:
-        data["pmfs"]["main_estimates"][block] = _right_replicate(data["pmfs"]["main_estimates"][block])
+        data["pmfs"]["main_estimates"][block] = _right_replicate(data["pmfs"]["main_estimates"][block],
+                                                                 center_include_in_first_half=False)
 
     bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
-    print(bootstrap_keys)
+    #print(bootstrap_keys)
     for bootstrap_key in bootstrap_keys:
         for block in data["free_energies"][bootstrap_key]:
             data["free_energies"][bootstrap_key][block] = _right_replicate(data["free_energies"][bootstrap_key][block])
@@ -122,7 +131,8 @@ def _right_replicate_data(data, system_type):
     print(bootstrap_keys)
     for bootstrap_key in bootstrap_keys:
         for block in data["pmfs"][bootstrap_key]:
-            data["pmfs"][bootstrap_key][block] = _right_replicate(data["pmfs"][bootstrap_key][block])
+            data["pmfs"][bootstrap_key][block] = _right_replicate(data["pmfs"][bootstrap_key][block],
+                                                                  center_include_in_first_half=False)
     return data
 
 
@@ -134,7 +144,7 @@ def _put_first_or_min_to_zero(data):
         data["pmfs"]["main_estimates"][block] = _min_to_zero(data["pmfs"]["main_estimates"][block])
 
     bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
-    print(bootstrap_keys)
+    #print(bootstrap_keys)
     for bootstrap_key in bootstrap_keys:
         for block in data["free_energies"][bootstrap_key]:
             data["free_energies"][bootstrap_key][block] = _first_to_zero(data["free_energies"][bootstrap_key][block])
@@ -168,16 +178,16 @@ all_data = {}
 for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file_name, "r"))
 
-    # reverse the order
+    # reverse order
     if label == "r_u":
         data = _reverse_data_order(data)
+
+    # put first or min to zero
+    data = _put_first_or_min_to_zero(data)
 
     # replica data on the right side
     if label in ["f_u", "r_u", "fr_b"]:
         data = _right_replicate_data(data, args.system_type)
-
-    # put first or min to zero
-    data = _put_first_or_min_to_zero(data)
 
     all_data[label] = data
 
