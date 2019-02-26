@@ -36,7 +36,7 @@ parser.add_argument("--pmf_xlabel", type=str, default="$z$")
 parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
 # for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
 # for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
-parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=0)
+parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
 parser.add_argument("--legend_ncol", type=int, default=3)
 
@@ -264,22 +264,22 @@ for label in data_estimator_pairs:
         end_pmf_ind = len(pmfs[label]["x"]) - start_pmf_ind
     else:
         end_pmf_ind = len(pmfs[label]["x"])
-    #xs.append(pmfs[label]["x"][start_pmf_ind : end_pmf_ind])
-    #ys.append(pmfs[label]["y"][start_pmf_ind : end_pmf_ind])
-    #yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind])
-    xs.append(pmfs[label]["x"])
-    ys.append(pmfs[label]["y"])
-    yerrs.append(pmfs[label]["error"])
+    xs.append(pmfs[label]["x"][start_pmf_ind : end_pmf_ind])
+    ys.append(pmfs[label]["y"][start_pmf_ind : end_pmf_ind])
+    yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind])
+    #xs.append(pmfs[label]["x"])
+    #ys.append(pmfs[label]["y"])
+    #yerrs.append(pmfs[label]["error"])
 
 
 end_pmf_ind = len(pmf_exact["pmf"]) - start_pmf_ind
-#xs.append(bin_centers(pmf_exact["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
-#ys.append(pmf_exact["pmf"][start_pmf_ind : end_pmf_ind])
-#yerrs.append(None)
-
-xs.append(bin_centers(pmf_exact["pmf_bin_edges"]))
-ys.append(pmf_exact["pmf"])
+xs.append(bin_centers(pmf_exact["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
+ys.append(pmf_exact["pmf"][start_pmf_ind : end_pmf_ind])
 yerrs.append(None)
+
+#xs.append(bin_centers(pmf_exact["pmf_bin_edges"]))
+#ys.append(pmf_exact["pmf"])
+#yerrs.append(None)
 
 if args.xlimits_pmf.lower() != "none":
     xlimits_pmf = [float(s) for s in args.xlimits_pmf.split()]
