@@ -63,6 +63,21 @@ def _min_to_zero(values):
     return values - values[argmin]
 
 
+def _argmin_to_target(to_be_transformed, target):
+    """
+        transfrom such that to_be_transformed[argmin] == target[argmin]
+        where argmin = np.argmin(target)
+        """
+    assert to_be_transformed.ndim == target.ndim == 1, "to_be_transformed and target must be 1d"
+    assert to_be_transformed.shape == target.shape, "pmf_to_be_transformed and pmf_target must have the same shape"
+
+    argmin = np.argmin(target)
+    d = target[argmin] - to_be_transformed[argmin]
+    transformed = to_be_transformed + d
+
+    return transformed
+
+
 def _right_replicate(first_half, center_include_in_first_half=True):
     if center_include_in_first_half:
         second_half = first_half[:-1]
@@ -144,22 +159,25 @@ def _right_replicate_data(data, system_type):
     return data
 
 
-def _put_first_or_min_to_zero(data):
+def _put_first_of_fe_to_zero(data):
     for block in data["free_energies"]["main_estimates"]:
         data["free_energies"]["main_estimates"][block] = _first_to_zero(data["free_energies"]["main_estimates"][block])
-
-    for block in data["pmfs"]["main_estimates"]:
-        data["pmfs"]["main_estimates"][block] = _min_to_zero(data["pmfs"]["main_estimates"][block])
 
     bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
     for bootstrap_key in bootstrap_keys:
         for block in data["free_energies"][bootstrap_key]:
             data["free_energies"][bootstrap_key][block] = _first_to_zero(data["free_energies"][bootstrap_key][block])
+    return data
+
+
+def _put_argmin_of_pmf_to_target(data, target):
+    for block in data["pmfs"]["main_estimates"]:
+        data["pmfs"]["main_estimates"][block] = _argmin_to_target(data["pmfs"]["main_estimates"][block], target)
 
     bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
     for bootstrap_key in bootstrap_keys:
         for block in data["pmfs"][bootstrap_key]:
-            data["pmfs"][bootstrap_key][block] = _min_to_zero(data["pmfs"][bootstrap_key][block])
+            data["pmfs"][bootstrap_key][block] = _argmin_to_target(data["pmfs"][bootstrap_key][block], target)
 
     return data
 
