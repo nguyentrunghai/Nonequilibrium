@@ -65,9 +65,9 @@ def _min_to_zero(values):
 
 def _argmin_to_target(to_be_transformed, target):
     """
-        transfrom such that to_be_transformed[argmin] == target[argmin]
-        where argmin = np.argmin(target)
-        """
+    transfrom such that to_be_transformed[argmin] == target[argmin]
+    where argmin = np.argmin(target)
+    """
     assert to_be_transformed.ndim == target.ndim == 1, "to_be_transformed and target must be 1d"
     assert to_be_transformed.shape == target.shape, "pmf_to_be_transformed and pmf_target must have the same shape"
 
