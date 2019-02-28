@@ -131,7 +131,7 @@ def _right_replicate_data(data, system_type):
             data["free_energies"][bootstrap_key][block] = _right_replicate(data["free_energies"][bootstrap_key][block])
 
     bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
-    print(bootstrap_keys)
+    #print(bootstrap_keys)
     for bootstrap_key in bootstrap_keys:
         for block in data["pmfs"][bootstrap_key]:
             data["pmfs"][bootstrap_key][block] = _right_replicate(data["pmfs"][bootstrap_key][block],
@@ -153,7 +153,7 @@ def _put_first_or_min_to_zero(data):
             data["free_energies"][bootstrap_key][block] = _first_to_zero(data["free_energies"][bootstrap_key][block])
 
     bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
-    print(bootstrap_keys)
+    #print(bootstrap_keys)
     for bootstrap_key in bootstrap_keys:
         for block in data["pmfs"][bootstrap_key]:
             data["pmfs"][bootstrap_key][block] = _min_to_zero(data["pmfs"][bootstrap_key][block])
@@ -263,7 +263,7 @@ yerrs = []
 for label in data_estimator_pairs:
     end_pmf_ind = len(pmfs[label]["x"]) - start_pmf_ind
 
-    if label in ["f_u", "r_u", "fr_b"] and (not args.want_right_replicate_for_asym):
+    if label in ["f_u", "r_u", "fr_b"] and (not args.want_right_replicate_for_asym) and args.system_type == "symmetric":
         end_pmf_ind = len(pmfs[label]["x"])
 
     xs.append(pmfs[label]["x"][start_pmf_ind : end_pmf_ind])
