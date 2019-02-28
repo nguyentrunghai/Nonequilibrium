@@ -69,9 +69,12 @@ def _argmin_to_target(to_be_transformed, target):
     where argmin = np.argmin(target)
     """
     assert to_be_transformed.ndim == target.ndim == 1, "to_be_transformed and target must be 1d"
-    assert to_be_transformed.shape == target.shape, "pmf_to_be_transformed and pmf_target must have the same shape"
+    #assert to_be_transformed.shape == target.shape, "pmf_to_be_transformed and pmf_target must have the same shape"
 
     argmin = np.argmin(target)
+    if argmin >= to_be_transformed.shape[0]:
+        raise IndexError("argmin >= to_be_transformed.shape[0]")
+    
     d = target[argmin] - to_be_transformed[argmin]
     transformed = to_be_transformed + d
 
@@ -228,7 +231,6 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     free_energies[label] = {"x":fe_x, "y":fe_y, "error":fe_error}
 
     pmf_x = bin_centers(data["pmfs"]["pmf_bin_edges"])
-    #print(label, data["pmfs"]["pmf_bin_edges"].shape)
     pmf_ys = np.array(data["pmfs"]["main_estimates"].values())
     pmf_y = pmf_ys.mean(axis=0)
     pmf_error = pmf_ys.std(axis=0)
