@@ -98,24 +98,17 @@ def _replicate(first_half, method, exclude_last_in_first_half=True):
 
 
 def _reverse_data_order(data):
+    """Only need to do for free energies"""
     data["free_energies"]["lambdas"] = data["free_energies"]["lambdas"][::-1]
-    #data["pmfs"]["pmf_bin_edges"] = data["pmfs"]["pmf_bin_edges"][::-1]
 
     for block in data["free_energies"]["main_estimates"]:
         data["free_energies"]["main_estimates"][block] = data["free_energies"]["main_estimates"][block][::-1]
-
-    #for block in data["pmfs"]["main_estimates"]:
-    #    data["pmfs"]["main_estimates"][block] = data["pmfs"]["main_estimates"][block][::-1]
 
     bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
     for bootstrap_key in bootstrap_keys:
         for block in data["free_energies"][bootstrap_key]:
             data["free_energies"][bootstrap_key][block] = data["free_energies"][bootstrap_key][block][::-1]
 
-    #bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
-    #for bootstrap_key in bootstrap_keys:
-    #    for block in data["pmfs"][bootstrap_key]:
-    #        data["pmfs"][bootstrap_key][block] = data["pmfs"][bootstrap_key][block][::-1]
     return data
 
 
