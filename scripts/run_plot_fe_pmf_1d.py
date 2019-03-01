@@ -205,10 +205,10 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     if label == "r_u":
         data = _reverse_data_order(data)
 
-    # replica data on the right side
+    # replicate data
     if args.want_right_replicate_for_asym:
         if label in ["f_u", "r_u", "fr_b"]:
-            data = _right_replicate_data(data, args.system_type)
+            data = _replicate_data(data, args.system_type)
 
     # put first of fes to zero
     data = _put_first_of_fe_to_zero(data)
