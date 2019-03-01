@@ -183,6 +183,12 @@ print("num_fe_file", num_fe_file)
 exact_pmf_file = os.path.join(args.data_dir, args.exact_pmf_file)
 print("exact_pmf_file", exact_pmf_file)
 
+fe_num = pickle.load(open(num_fe_file, "r"))
+fe_num["fe"] = _first_to_zero(fe_num["fe"])
+
+pmf_exact = pickle.load(open(exact_pmf_file , "r"))
+pmf_exact["pmf"] = _min_to_zero(pmf_exact["pmf"])
+
 data_estimator_pairs = args.data_estimator_pairs.split()
 if len(data_estimator_pairs) != len(free_energies_pmfs_files):
     raise ValueError("data_estimator_pairs and free_energies_pmfs_files not consistent")
@@ -198,12 +204,16 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     if label == "r_u":
         data = _reverse_data_order(data)
 
-    # put first or min to zero
-    data = _put_first_or_min_to_zero(data)
+    # replicate data
+    if args.want_right_replicate_for_asym:
+        if label in ["f_u", "r_u", "fr_b"]:
+            data = _replicate_data(data, args.system_type)
 
-    # replica data on the right side
-    if label in ["f_u", "r_u", "fr_b"]:
-        data = _right_replicate_data(data, args.system_type)
+    # put first of fes to zero
+    data = _put_first_of_fe_to_zero(data)
+
+    # put argmin of pmf to pmf_exact["pmf"]
+    data = _put_argmin_of_pmf_to_target(data, pmf_exact["pmf"])
 
     all_data[label] = data
 
