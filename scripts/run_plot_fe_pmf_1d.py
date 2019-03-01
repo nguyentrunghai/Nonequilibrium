@@ -81,8 +81,8 @@ def _argmin_to_target(to_be_transformed, target):
     return transformed
 
 
-def _right_replicate(first_half, center_include_in_first_half=True):
-    if center_include_in_first_half:
+def _replicate_as_is(first_half, exclude_last_in_first_half=True):
+    if exclude_last_in_first_half:
         second_half = first_half[:-1]
     else:
         second_half = first_half
