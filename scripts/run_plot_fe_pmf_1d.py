@@ -81,24 +81,20 @@ def _argmin_to_target(to_be_transformed, target):
     return transformed
 
 
-def _replicate_as_is(first_half, exclude_last_in_first_half=True):
+def _replicate(first_half, method, exclude_last_in_first_half=True):
+    if method not in ["as_is", "to_the_right_of_zero"]:
+        raise ValueError("Unrecognized method")
+
     if exclude_last_in_first_half:
         second_half = first_half[:-1]
     else:
         second_half = first_half
 
     second_half = second_half[::-1]
-    return np.hstack([first_half, second_half])
-
-
-def _right_replicate_and_negate(first_half, center_include_in_first_half=True):
-    if center_include_in_first_half:
-        second_half = first_half[:-1]
+    if method == "as_is":
+        return np.hstack([first_half, second_half])
     else:
-        second_half = first_half
-
-    second_half = second_half[::-1]
-    return np.hstack([first_half, -second_half])
+        return np.hstack([first_half, -second_half])
 
 
 def _reverse_data_order(data):
