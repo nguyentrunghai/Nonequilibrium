@@ -79,10 +79,12 @@ pmf_exact["pmf"] = min_to_zero(pmf_exact["pmf"])
 fe_rmse  = {}
 pmf_rmse = {}
 for label in data_estimator_pairs:
+    print("label", label)
     fe_rmse[label] = []
     pmf_rmse[label] = []
 
     for fes_pmfs_file in fes_pmfs_files[label]:
+        print("processing file", fes_pmfs_file)
         data = pickle.load(open(fes_pmfs_file, "r"))
 
         if data["free_energies"]["ntrajs_per_block"] != data["pmfs"]["ntrajs_per_block"]:
