@@ -36,7 +36,8 @@ parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
 
 parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
-parser.add_argument("--legend_ncol", type=int, default=3)
+parser.add_argument("--legend_ncol_fe", type=int, default=1)
+parser.add_argument("--legend_ncol_pmf", type=int, default=1)
 
 parser.add_argument("--xlimits_fe", type=str, default="None")
 parser.add_argument("--ylimits_fe", type=str, default="None")
@@ -227,6 +228,7 @@ for label in all_data:
     pmf_rmse[label] = _rmse(all_data[label]["pmfs"]["main_estimates"], pmf_exact["pmf"])
 
 
+# plot fe rmse
 xs = []
 ys = []
 for label in data_estimator_pairs:
@@ -250,11 +252,50 @@ plot_lines(xs, ys, yerrs=None,
            out=args.fe_out,
            legends=data_estimator_pairs,
            legend_pos="best",
-           legend_ncol=args.legend_ncol,
+           legend_ncol=args.legend_ncol_fe,
            legend_fontsize=8,
            markers=MARKERS,
            xlimits=xlimits_fe,
            ylimits=ylimits_fe,
+           lw=1.0,
+           markersize=4,
+           alpha=1.,
+           n_xtics=8,
+           n_ytics=8)
+
+
+# plot pmf rmse
+start_pmf_ind = args.bin_ind_to_start_to_plot
+
+xs = []
+ys = []
+for label in data_estimator_pairs:
+    x = bin_centers(all_data[label]["pmfs"]["pmf_bin_edges"])
+
+    end_pmf_ind = len(x) - start_pmf_ind
+    xs.append(x[start_pmf_ind : end_pmf_ind])
+    ys.append(pmf_rmse[label][start_pmf_ind : end_pmf_ind])
+
+if args.xlimits_pmf.lower() != "none":
+    xlimits_pmf = [float(s) for s in args.xlimits_pmf.split()]
+else:
+    xlimits_pmf = None
+
+if args.ylimits_pmf.lower() != "none":
+    ylimits_pmf = [float(s) for s in args.ylimits_pmf.split()]
+else:
+    ylimits_pmf = None
+
+plot_lines(xs, ys, yerrs=None,
+           xlabel=args.pmf_xlabel, ylabel=args.pmf_ylabel,
+           out=args.pmf_out,
+           legends=data_estimator_pairs,
+           legend_ncol=args.legend_ncol_pmf,
+           legend_pos="best",
+           legend_fontsize=8,
+           markers=MARKERS,
+           xlimits=xlimits_pmf,
+           ylimits=ylimits_pmf,
            lw=1.0,
            markersize=4,
            alpha=1.,
