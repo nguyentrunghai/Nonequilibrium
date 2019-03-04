@@ -291,7 +291,7 @@ for label in data_estimator_pairs:
     end_pmf_ind = len(x) - start_pmf_ind
     xs.append(x[start_pmf_ind : end_pmf_ind])
     ys.append(pmf_rmse[label][start_pmf_ind : end_pmf_ind])
-    yerrs.append(pmf_rmse_std_error[label] / 2)
+    yerrs.append(pmf_rmse_std_error[label][start_pmf_ind : end_pmf_ind] / 2)
 
 if args.xlimits_pmf.lower() != "none":
     xlimits_pmf = [float(s) for s in args.xlimits_pmf.split()]
