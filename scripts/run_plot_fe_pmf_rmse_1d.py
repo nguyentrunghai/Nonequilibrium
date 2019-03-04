@@ -20,11 +20,11 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--data_dir", type=str, default="./")
 
-parser.add_argument( "--system_type", type=str, default="symmetric")
-
 parser.add_argument("--free_energies_pmfs_files", type=str, default="symmetric_uf_ntrajs_200.pkl symmetric_b_ntrajs_200.pkl symmetric_s_ntrajs_200.pkl asymmetric_uf_ntrajs_400.pkl asymmetric_ur_ntrajs_400.pkl asymmetric_b_ntrajs_400.pkl")
 parser.add_argument("--num_fe_file", type=str, default="fe_symmetric_numerical.pkl")
 parser.add_argument("--exact_pmf_file", type=str, default="pmf_symmetric_exact.pkl")
+
+parser.add_argument( "--system_type", type=str, default="symmetric")
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
