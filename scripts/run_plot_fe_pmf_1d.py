@@ -238,7 +238,7 @@ yerrs = []
 for label in data_estimator_pairs:
     xs.append(free_energies[label]["x"])
     ys.append(free_energies[label]["y"])
-    yerrs.append(free_energies[label]["error"])
+    yerrs.append(free_energies[label]["error"] / 2)  # error bars are one std
 
 xs.append(fe_num["lambdas"])
 ys.append(fe_num["fe"])
@@ -287,7 +287,7 @@ for label in data_estimator_pairs:
 
     xs.append(pmfs[label]["x"][start_pmf_ind : end_pmf_ind])
     ys.append(pmfs[label]["y"][start_pmf_ind : end_pmf_ind])
-    yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind])
+    yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind] / 2)  # error bars are one std
 
 
 end_pmf_ind = len(pmf_exact["pmf"]) - start_pmf_ind
