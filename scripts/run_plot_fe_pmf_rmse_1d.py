@@ -248,7 +248,7 @@ MARKERS = ["<", ">", "^", "v", "s", "d", "."]
 plot_lines(xs, ys, yerrs=None,
            xlabel=args.fe_xlabel, ylabel=args.fe_ylabel,
            out=args.fe_out,
-           legends=data_estimator_pairs + ["num"],
+           legends=data_estimator_pairs,
            legend_pos="best",
            legend_ncol=args.legend_ncol,
            legend_fontsize=8,
