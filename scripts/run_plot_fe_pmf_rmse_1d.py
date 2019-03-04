@@ -33,8 +33,7 @@ parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$")
 
 parser.add_argument("--pmf_xlabel", type=str, default="$z$")
 parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
-# for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
-# for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
+
 parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
 parser.add_argument("--legend_ncol", type=int, default=3)
@@ -205,9 +204,8 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
         data = _reverse_data_order(data)
 
     # replicate data
-    if args.want_right_replicate_for_asym:
-        if label in ["f_u", "r_u", "fr_b"]:
-            data = _replicate_data(data, args.system_type)
+    if label in ["f_u", "r_u", "fr_b"]:
+        data = _replicate_data(data, args.system_type)
 
     # put first of fes to zero
     data = _put_first_of_fe_to_zero(data)
