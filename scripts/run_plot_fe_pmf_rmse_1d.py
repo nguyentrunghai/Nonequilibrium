@@ -44,8 +44,8 @@ parser.add_argument("--ylimits_fe", type=str, default="None")
 parser.add_argument("--xlimits_pmf", type=str, default="None")
 parser.add_argument("--ylimits_pmf", type=str, default="None")
 
-parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
-parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
+parser.add_argument("--fe_out", type=str, default="fe_rmse.pdf")
+parser.add_argument("--pmf_out", type=str, default="pmf_rmse.pdf")
 
 args = parser.parse_args()
 
@@ -227,3 +227,36 @@ for label in all_data:
     pmf_rmse[label] = _rmse(all_data[label]["pmfs"]["main_estimates"], pmf_exact["pmf"])
 
 
+xs = []
+ys = []
+for label in data_estimator_pairs:
+    xs.append(all_data[label]["free_energies"]["lambdas"])
+    ys.append(fe_rmse[label])
+
+if args.xlimits_fe.lower() != "none":
+    xlimits_fe = [float(s) for s in args.xlimits_fe.split()]
+else:
+    xlimits_fe = None
+
+if args.ylimits_fe.lower() != "none":
+    ylimits_fe = [float(s) for s in args.ylimits_fe.split()]
+else:
+    ylimits_fe = None
+
+MARKERS = ["<", ">", "^", "v", "s", "d", "."]
+
+plot_lines(xs, ys, yerrs=None,
+           xlabel=args.fe_xlabel, ylabel=args.fe_ylabel,
+           out=args.fe_out,
+           legends=data_estimator_pairs + ["num"],
+           legend_pos="best",
+           legend_ncol=args.legend_ncol,
+           legend_fontsize=8,
+           markers=MARKERS,
+           xlimits=xlimits_fe,
+           ylimits=ylimits_fe,
+           lw=1.0,
+           markersize=4,
+           alpha=1.,
+           n_xtics=8,
+           n_ytics=8)
