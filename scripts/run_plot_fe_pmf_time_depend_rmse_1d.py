@@ -44,8 +44,8 @@ parser.add_argument("--ylimits_fe", type=str, default="None")
 parser.add_argument("--xlimits_pmf", type=str, default="None")
 parser.add_argument("--ylimits_pmf", type=str, default="None")
 
-parser.add_argument("--fe_out", type=str, default="fe_rmse.pdf")
-parser.add_argument("--pmf_out", type=str, default="pmf_rmse.pdf")
+parser.add_argument("--fe_out", type=str, default="fe_rmse_time_depend.pdf")
+parser.add_argument("--pmf_out", type=str, default="pmf_rmse_time_depend.pdf")
 
 args = parser.parse_args()
 
