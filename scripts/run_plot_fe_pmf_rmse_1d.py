@@ -173,6 +173,11 @@ def _put_argmin_of_pmf_to_target(data, target):
     return data
 
 
+def _rmse(main_estimates, reference):
+    squared_deviations = [(estimates - reference)**2 for estimates in main_estimates.values()]
+    squared_deviations = np.array(squared_deviations)
+    return squared_deviations.mean(axis=0)
+
 free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
 
@@ -215,5 +220,10 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
 
     all_data[label] = data
 
+fe_rmse = {}
+pmf_rmse = {}
+for label in all_data:
+    fe_rmse[label] = _rmse(all_data[label]["free_energies"]["main_estimates"], fe_num["fe"])
+    pmf_rmse[label] = _rmse(all_data[label]["pmfs"]["main_estimates"], pmf_exact["pmf"])
 
 
