@@ -11,6 +11,7 @@ import pickle
 
 import numpy as np
 
+from _plots import plot_lines
 from _fe_pmf_plot_utils import first_to_zero, min_to_zero
 from _fe_pmf_plot_utils import reverse_data_order, replicate_data
 from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_target
@@ -27,6 +28,24 @@ parser.add_argument( "--system_type", type=str, default="symmetric")
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
 parser.add_argument( "--pmf_bin_truncate", type=int, default=2)
+
+parser.add_argument("--fe_xlabel", type=str, default="# of trajectories")
+parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$]")
+
+parser.add_argument("--pmf_xlabel", type=str, default="# of trajectories")
+parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$]")
+
+parser.add_argument("--legend_ncol_fe", type=int, default=1)
+parser.add_argument("--legend_ncol_pmf", type=int, default=1)
+
+parser.add_argument("--xlimits_fe", type=str, default="None")
+parser.add_argument("--ylimits_fe", type=str, default="None")
+
+parser.add_argument("--xlimits_pmf", type=str, default="None")
+parser.add_argument("--ylimits_pmf", type=str, default="None")
+
+parser.add_argument("--fe_out", type=str, default="fe_rmse.pdf")
+parser.add_argument("--pmf_out", type=str, default="pmf_rmse.pdf")
 
 args = parser.parse_args()
 
@@ -90,6 +109,8 @@ for label in data_estimator_pairs:
         if data["free_energies"]["ntrajs_per_block"] != data["pmfs"]["ntrajs_per_block"]:
             raise ValueError("ntrajs_per_block are not consistent in" + fes_pmfs_file)
         ntrajs = data["free_energies"]["ntrajs_per_block"]
+        if label in ["s_u", "s_b", "s_s"]:
+            ntrajs *= 2
 
         # reverse order
         if label == "r_u":
@@ -115,3 +136,44 @@ for label in data_estimator_pairs:
 
     fe_rmse[label].sort(key=lambda item: item[0])
     pmf_rmse[label].sort(key=lambda item: item[0])
+
+# plot fe rmse
+xs = []
+ys = []
+yerrs = []
+for label in data_estimator_pairs:
+    x = np.array(item[0] for item in fe_rmse[label])
+    y = np.array(item[1] for item in fe_rmse[label])
+    yerr = np.array(item[2] for item in fe_rmse[label])
+
+    xs.append(x)
+    ys.append(y)
+    yerrs.append(yerr / 2)
+
+if args.xlimits_fe.lower() != "none":
+    xlimits_fe = [float(s) for s in args.xlimits_fe.split()]
+else:
+    xlimits_fe = None
+
+if args.ylimits_fe.lower() != "none":
+    ylimits_fe = [float(s) for s in args.ylimits_fe.split()]
+else:
+    ylimits_fe = None
+
+MARKERS = ["<", ">", "^", "v", "s", "d", "."]
+
+plot_lines(xs, ys, yerrs=yerrs,
+           xlabel=args.fe_xlabel, ylabel=args.fe_ylabel,
+           out=args.fe_out,
+           legends=data_estimator_pairs,
+           legend_pos="best",
+           legend_ncol=args.legend_ncol_fe,
+           legend_fontsize=8,
+           markers=MARKERS,
+           xlimits=xlimits_fe,
+           ylimits=ylimits_fe,
+           lw=1.0,
+           markersize=4,
+           alpha=1.,
+           n_xtics=8,
+           n_ytics=8)
