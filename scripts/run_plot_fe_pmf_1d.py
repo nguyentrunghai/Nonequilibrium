@@ -40,7 +40,8 @@ parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
 parser.add_argument( "--want_right_replicate_for_asym", action="store_true", default=False)
 
-parser.add_argument("--legend_ncol", type=int, default=3)
+parser.add_argument("--legend_ncol_fe", type=int, default=3)
+parser.add_argument("--legend_ncol_pmf", type=int, default=3)
 
 parser.add_argument("--xlimits_fe", type=str, default="None")
 parser.add_argument("--ylimits_fe", type=str, default="None")
@@ -260,7 +261,7 @@ plot_lines(xs, ys, yerrs=yerrs,
            out=args.fe_out,
            legends=data_estimator_pairs + ["num"],
            legend_pos="best",
-           legend_ncol=args.legend_ncol,
+           legend_ncol=args.legend_ncol_fe,
            legend_fontsize=8,
            markers=MARKERS,
            xlimits=xlimits_fe,
@@ -308,7 +309,7 @@ plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.pmf_xlabel, ylabel=args.pmf_ylabel,
            out=args.pmf_out,
            legends=data_estimator_pairs + ["exact"],
-           legend_ncol=args.legend_ncol,
+           legend_ncol=args.legend_ncol_pmf,
            legend_pos="best",
            legend_fontsize=8,
            markers=MARKERS,
