@@ -142,9 +142,9 @@ xs = []
 ys = []
 yerrs = []
 for label in data_estimator_pairs:
-    x = np.array(item[0] for item in fe_rmse[label])
-    y = np.array(item[1] for item in fe_rmse[label])
-    yerr = np.array(item[2] for item in fe_rmse[label])
+    x = np.array([item[0] for item in fe_rmse[label]])
+    y = np.array([item[1] for item in fe_rmse[label]])
+    yerr = np.array([item[2] for item in fe_rmse[label]])
 
     xs.append(x)
     ys.append(y)
