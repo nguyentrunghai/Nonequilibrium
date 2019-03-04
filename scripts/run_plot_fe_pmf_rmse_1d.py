@@ -40,10 +40,10 @@ parser.add_argument("--legend_ncol_fe", type=int, default=1)
 parser.add_argument("--legend_ncol_pmf", type=int, default=1)
 
 parser.add_argument("--xlimits_fe", type=str, default="None")
-parser.add_argument("--ylimits_fe", type=str, default="None")
+parser.add_argument("--ylimits_fe", type=str, default="-0.1 1.1")
 
 parser.add_argument("--xlimits_pmf", type=str, default="None")
-parser.add_argument("--ylimits_pmf", type=str, default="None")
+parser.add_argument("--ylimits_pmf", type=str, default="-0.1 1.5")
 
 parser.add_argument("--fe_out", type=str, default="fe_rmse.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_rmse.pdf")
