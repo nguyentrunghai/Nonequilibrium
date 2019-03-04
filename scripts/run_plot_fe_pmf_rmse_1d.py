@@ -182,7 +182,6 @@ def _rmse(main_estimates, reference):
 
 def _rmse_std_error(pull_data, reference):
     bootstrap_keys = [bt for bt in pull_data if bt.startswith("bootstrap_")]
-    print(bootstrap_keys)
     bootstrap_estimates = [_rmse(pull_data[bootstrap_key], reference) for bootstrap_key in bootstrap_keys]
     bootstrap_estimates = np.array(bootstrap_estimates)
     return bootstrap_estimates.std(axis=0)
