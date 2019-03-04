@@ -179,6 +179,15 @@ def _rmse(main_estimates, reference):
     squared_deviations = np.array(squared_deviations)
     return squared_deviations.mean(axis=0)
 
+
+def _rmse_std_error(pull_data, reference):
+    bootstrap_keys = [bt for bt in pull_data if bt.startswith("bootstrap_")]
+    print(bootstrap_keys)
+    bootstrap_estimates = [_rmse(pull_data[bootstrap_key], reference) for bootstrap_key in bootstrap_keys]
+    bootstrap_estimates = np.array(bootstrap_estimates)
+    return bootstrap_estimates.std(axis=0)
+
+
 free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
 
@@ -222,18 +231,24 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     all_data[label] = data
 
 fe_rmse = {}
+fe_rmse_std_error = {}
 pmf_rmse = {}
+pmf_rmse_std_error = {}
 for label in all_data:
     fe_rmse[label] = _rmse(all_data[label]["free_energies"]["main_estimates"], fe_num["fe"])
-    pmf_rmse[label] = _rmse(all_data[label]["pmfs"]["main_estimates"], pmf_exact["pmf"])
+    fe_rmse_std_error[label] = _rmse_std_error(all_data[label]["free_energies"], fe_num["fe"])
 
+    pmf_rmse[label] = _rmse(all_data[label]["pmfs"]["main_estimates"], pmf_exact["pmf"])
+    pmf_rmse_std_error[label] = _rmse_std_error(all_data[label]["pmfs"], pmf_exact["pmf"])
 
 # plot fe rmse
 xs = []
 ys = []
+yerrs = []
 for label in data_estimator_pairs:
     xs.append(all_data[label]["free_energies"]["lambdas"])
     ys.append(fe_rmse[label])
+    yerrs.append(fe_rmse_std_error[label] / 2)
 
 if args.xlimits_fe.lower() != "none":
     xlimits_fe = [float(s) for s in args.xlimits_fe.split()]
@@ -247,7 +262,7 @@ else:
 
 MARKERS = ["<", ">", "^", "v", "s", "d", "."]
 
-plot_lines(xs, ys, yerrs=None,
+plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.fe_xlabel, ylabel=args.fe_ylabel,
            out=args.fe_out,
            legends=data_estimator_pairs,
@@ -269,12 +284,14 @@ start_pmf_ind = args.bin_ind_to_start_to_plot
 
 xs = []
 ys = []
+yerrs = []
 for label in data_estimator_pairs:
     x = bin_centers(all_data[label]["pmfs"]["pmf_bin_edges"])
 
     end_pmf_ind = len(x) - start_pmf_ind
     xs.append(x[start_pmf_ind : end_pmf_ind])
     ys.append(pmf_rmse[label][start_pmf_ind : end_pmf_ind])
+    yerrs.append(pmf_rmse_std_error[label] / 2)
 
 if args.xlimits_pmf.lower() != "none":
     xlimits_pmf = [float(s) for s in args.xlimits_pmf.split()]
@@ -286,7 +303,7 @@ if args.ylimits_pmf.lower() != "none":
 else:
     ylimits_pmf = None
 
-plot_lines(xs, ys, yerrs=None,
+plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.pmf_xlabel, ylabel=args.pmf_ylabel,
            out=args.pmf_out,
            legends=data_estimator_pairs,
