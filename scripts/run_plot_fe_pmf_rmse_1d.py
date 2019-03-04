@@ -29,10 +29,10 @@ parser.add_argument( "--system_type", type=str, default="symmetric")
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
 parser.add_argument("--fe_xlabel", type=str, default="$\lambda$")
-parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$")
+parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$]")
 
 parser.add_argument("--pmf_xlabel", type=str, default="$z$")
-parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
+parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$]")
 
 parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
 
