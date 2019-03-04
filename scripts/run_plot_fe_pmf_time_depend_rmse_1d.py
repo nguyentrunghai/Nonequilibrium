@@ -35,8 +35,8 @@ parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$]
 parser.add_argument("--pmf_xlabel", type=str, default="# of trajectories")
 parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$]")
 
-parser.add_argument("--legend_ncol_fe", type=int, default=1)
-parser.add_argument("--legend_ncol_pmf", type=int, default=1)
+parser.add_argument("--legend_ncol_fe", type=int, default=3)
+parser.add_argument("--legend_ncol_pmf", type=int, default=3)
 
 parser.add_argument("--xlimits_fe", type=str, default="None")
 parser.add_argument("--ylimits_fe", type=str, default="None")
@@ -172,6 +172,46 @@ plot_lines(xs, ys, yerrs=yerrs,
            markers=MARKERS,
            xlimits=xlimits_fe,
            ylimits=ylimits_fe,
+           lw=1.0,
+           markersize=4,
+           alpha=1.,
+           n_xtics=8,
+           n_ytics=8)
+
+
+# plot pmf rmse
+xs = []
+ys = []
+yerrs = []
+for label in data_estimator_pairs:
+    x = np.array([item[0] for item in pmf_rmse[label]])
+    y = np.array([item[1] for item in pmf_rmse[label]])
+    yerr = np.array([item[2] for item in pmf_rmse[label]])
+
+    xs.append(x)
+    ys.append(y)
+    yerrs.append(yerr / 2)
+
+if args.xlimits_pmf.lower() != "none":
+    xlimits_pmf = [float(s) for s in args.xlimits_pmf.split()]
+else:
+    xlimits_pmf = None
+
+if args.ylimits_pmf.lower() != "none":
+    ylimits_pmf = [float(s) for s in args.ylimits_pmf.split()]
+else:
+    ylimits_pmf = None
+
+plot_lines(xs, ys, yerrs=yerrs,
+           xlabel=args.pmf_xlabel, ylabel=args.pmf_ylabel,
+           out=args.pmf_out,
+           legends=data_estimator_pairs,
+           legend_ncol=args.legend_ncol_pmf,
+           legend_pos="best",
+           legend_fontsize=8,
+           markers=MARKERS,
+           xlimits=xlimits_pmf,
+           ylimits=ylimits_pmf,
            lw=1.0,
            markersize=4,
            alpha=1.,
