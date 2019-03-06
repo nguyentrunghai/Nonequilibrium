@@ -24,9 +24,9 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--data_dir", type=str, default="./")
 
-parser.add_argument("--free_energies_pmfs_files", type=str, default="symmetric_uf_ntrajs_200.pkl symmetric_b_ntrajs_200.pkl symmetric_s_ntrajs_200.pkl asymmetric_uf_ntrajs_400.pkl asymmetric_ur_ntrajs_400.pkl asymmetric_b_ntrajs_400.pkl")
-parser.add_argument("--num_fe_file", type=str, default="fe_symmetric_numerical.pkl")
-parser.add_argument("--exact_pmf_file", type=str, default="pmf_symmetric_exact.pkl")
+parser.add_argument("--free_energies_pmfs_files", type=str, default="file1 file2")
+parser.add_argument("--num_fe_file", type=str, default="fe_numerical.pkl")
+parser.add_argument("--exact_pmf_file", type=str, default="pmf_exact.pkl")
 
 parser.add_argument( "--system_type", type=str, default="symmetric")
 
@@ -39,12 +39,12 @@ parser.add_argument("--pmf_xlabel", type=str, default="$z$")
 parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
 # for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
 # for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
-parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
+parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=0)
 
 parser.add_argument( "--want_right_replicate_for_asym", action="store_true", default=False)
 
-parser.add_argument("--legend_ncol_fe", type=int, default=3)
-parser.add_argument("--legend_ncol_pmf", type=int, default=3)
+parser.add_argument("--legend_ncol_fe", type=int, default=1)
+parser.add_argument("--legend_ncol_pmf", type=int, default=1)
 
 parser.add_argument("--xlimits_fe", type=str, default="None")
 parser.add_argument("--ylimits_fe", type=str, default="None")
@@ -52,8 +52,8 @@ parser.add_argument("--ylimits_fe", type=str, default="None")
 parser.add_argument("--xlimits_pmf", type=str, default="None")
 parser.add_argument("--ylimits_pmf", type=str, default="None")
 
-parser.add_argument("--fe_out", type=str, default="fe_plots.pdf")
-parser.add_argument("--pmf_out", type=str, default="pmf_plots.pdf")
+parser.add_argument("--fe_out", type=str, default="fe.pdf")
+parser.add_argument("--pmf_out", type=str, default="pmf.pdf")
 
 args = parser.parse_args()
 
