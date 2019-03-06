@@ -23,9 +23,9 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--data_dir", type=str, default="./")
 
-parser.add_argument("--free_energies_pmfs_files", type=str, default="symmetric_uf_ntrajs_200.pkl symmetric_b_ntrajs_200.pkl symmetric_s_ntrajs_200.pkl asymmetric_uf_ntrajs_400.pkl asymmetric_ur_ntrajs_400.pkl asymmetric_b_ntrajs_400.pkl")
-parser.add_argument("--num_fe_file", type=str, default="fe_symmetric_numerical.pkl")
-parser.add_argument("--exact_pmf_file", type=str, default="pmf_symmetric_exact.pkl")
+parser.add_argument("--free_energies_pmfs_files", type=str, default="file1 file2")
+parser.add_argument("--num_fe_file", type=str, default="fe_numerical.pkl")
+parser.add_argument("--exact_pmf_file", type=str, default="pmf_exact.pkl")
 
 parser.add_argument( "--system_type", type=str, default="symmetric")
 
@@ -37,16 +37,16 @@ parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$]
 parser.add_argument("--pmf_xlabel", type=str, default="$z$")
 parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$]")
 
-parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=1)
+parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=0)
 
 parser.add_argument("--legend_ncol_fe", type=int, default=1)
 parser.add_argument("--legend_ncol_pmf", type=int, default=1)
 
 parser.add_argument("--xlimits_fe", type=str, default="None")
-parser.add_argument("--ylimits_fe", type=str, default="-0.1 1.1")
+parser.add_argument("--ylimits_fe", type=str, default="None")
 
 parser.add_argument("--xlimits_pmf", type=str, default="None")
-parser.add_argument("--ylimits_pmf", type=str, default="-0.1 1.5")
+parser.add_argument("--ylimits_pmf", type=str, default="None")
 
 parser.add_argument("--fe_out", type=str, default="fe_rmse.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_rmse.pdf")
@@ -89,7 +89,7 @@ if len(data_estimator_pairs) != len(free_energies_pmfs_files):
 for label in data_estimator_pairs:
     if label not in ["s_u", "s_b", "s_s", "f_u", "r_u", "fr_b"]:
         raise ValueError("Unrecognized label: " + label)
-    
+
 free_energies = {}
 pmfs = {}
 
