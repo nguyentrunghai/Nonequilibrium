@@ -19,15 +19,15 @@ from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_tar
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_dir", type=str, default="./")
 
-parser.add_argument("--fes_pmfs_file_matching", type=str, default="symmetric_uf_ntrajs_*.pkl symmetric_b_ntrajs_*.pkl symmetric_s_ntrajs_*.pkl asymmetric_uf_ntrajs_*.pkl asymmetric_ur_ntrajs_*.pkl asymmetric_b_ntrajs_*.pkl")
-parser.add_argument("--num_fe_file", type=str, default="fe_symmetric_numerical.pkl")
-parser.add_argument("--exact_pmf_file", type=str, default="pmf_symmetric_exact.pkl")
+parser.add_argument("--fes_pmfs_file_matching", type=str, default="file1* file2*")
+parser.add_argument("--num_fe_file", type=str, default="fe_numerical.pkl")
+parser.add_argument("--exact_pmf_file", type=str, default="pmf_exact.pkl")
 
 parser.add_argument( "--system_type", type=str, default="symmetric")
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
-parser.add_argument( "--pmf_bin_truncate", type=int, default=2)
+parser.add_argument( "--pmf_bin_truncate", type=int, default=0)
 
 parser.add_argument("--fe_xlabel", type=str, default="# of trajectories")
 parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$]")
@@ -35,8 +35,8 @@ parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$]
 parser.add_argument("--pmf_xlabel", type=str, default="# of trajectories")
 parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$]")
 
-parser.add_argument("--legend_ncol_fe", type=int, default=3)
-parser.add_argument("--legend_ncol_pmf", type=int, default=3)
+parser.add_argument("--legend_ncol_fe", type=int, default=1)
+parser.add_argument("--legend_ncol_pmf", type=int, default=1)
 
 parser.add_argument("--xlimits_fe", type=str, default="None")
 parser.add_argument("--ylimits_fe", type=str, default="None")
