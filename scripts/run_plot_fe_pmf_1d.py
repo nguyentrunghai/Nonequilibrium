@@ -89,6 +89,7 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     # replicate data
     if args.want_right_replicate_for_asym:
         if label in ["f_u", "r_u", "fr_b"]:
+            print("Right replicat for", label)
             data = replicate_data(data, args.system_type)
 
     # put first of fes to zero
