@@ -75,6 +75,10 @@ print("data_estimator_pairs", data_estimator_pairs)
 if len(fes_pmfs_file_matching) != len(data_estimator_pairs):
     raise ValueError("len of fes_pmfs_file_matching not the same as data_estimator_pair")
 
+for label in data_estimator_pairs:
+    if label not in ["s_u", "s_b", "s_s", "f_u", "r_u", "fr_b"]:
+        raise ValueError("Unrecognized label: " + label)
+    
 fes_pmfs_files = {}
 for label, matching in zip(data_estimator_pairs, fes_pmfs_file_matching):
     fes_pmfs_files[label] = glob.glob(os.path.join(args.data_dir, matching))
