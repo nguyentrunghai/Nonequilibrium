@@ -86,6 +86,10 @@ data_estimator_pairs = args.data_estimator_pairs.split()
 if len(data_estimator_pairs) != len(free_energies_pmfs_files):
     raise ValueError("data_estimator_pairs and free_energies_pmfs_files not consistent")
 
+for label in data_estimator_pairs:
+    if label not in ["s_u", "s_b", "s_s", "f_u", "r_u", "fr_b"]:
+        raise ValueError("Unrecognized label: " + label)
+    
 free_energies = {}
 pmfs = {}
 
