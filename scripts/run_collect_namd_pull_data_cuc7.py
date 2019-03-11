@@ -19,6 +19,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--forward_pull_dir", type=str, default="forward")
 parser.add_argument("--backward_pull_dir", type=str, default="backward")
 
+parser.add_argument("--forward_force_file", type=str, default="cuc7.force")
+parser.add_argument("--backward_force_file", type=str, default="cuc7.force")
+
 # will load load all files from range[0] to file_range[1]
 parser.add_argument("--range", type=str,  default="0 10")
 
@@ -36,8 +39,6 @@ args = parser.parse_args()
 KB = 0.0019872041   # kcal/mol/K
 TEMPERATURE = 300.
 BETA = 1/KB/TEMPERATURE
-
-FORCE_FILE = "cuc7.force"
 
 
 def _time_z_work(tcl_force_out_file, pulling_speed):
@@ -88,8 +89,10 @@ print("exclude", exclude)
 
 indices_to_collect = [i for i in range(start, end) if i not in exclude]
 
-forward_files  = [os.path.join(args.forward_pull_dir, "%d"%i, FORCE_FILE ) for i in indices_to_collect]
-backward_files = [os.path.join(args.backward_pull_dir, "%d"%i, FORCE_FILE ) for i in indices_to_collect]
+forward_files  = [os.path.join(args.forward_pull_dir, "%d"%i, args.forward_force_file)
+                  for i in indices_to_collect]
+backward_files = [os.path.join(args.backward_pull_dir, "%d"%i, args.backward_force_file)
+                  for i in indices_to_collect]
 
 for f in forward_files:
     assert os.path.exists(f), f + " does not exit."
