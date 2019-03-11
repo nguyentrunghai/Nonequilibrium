@@ -53,8 +53,15 @@ args = parser.parse_args()
 def _rmse(main_estimates, reference, truncate):
     begin = truncate
     end = len(reference) - truncate
-    squared_deviations = [(estimates[begin : end] - reference[begin : end])**2
-                          for estimates in main_estimates.values()]
+    #squared_deviations = [(estimates[begin : end] - reference[begin : end])**2
+    #                      for estimates in main_estimates.values()]
+
+    squared_deviations = []
+    for estimates in main_estimates.values():
+        sd = (estimates[begin : end] - reference[begin : end])**2
+        sd = sd[np.abs(sd) != np.inf]
+        squared_deviations.append(np.nanmean(sd))
+
     squared_deviations = np.array(squared_deviations)
     return squared_deviations.mean()
 
