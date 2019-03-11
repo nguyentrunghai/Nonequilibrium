@@ -3,6 +3,8 @@ write nc file which contains
 'zF_t', 'wF_t', 'zR_t', 'wR_t', 'ks',
 'lambda_F', 'lambda_R', 'pulling_times', 'dt'
 """
+from __future__ import print_function
+from __future__ import division
 
 import os
 import argparse
@@ -17,15 +19,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--forward_pull_dir", type=str, default="forward")
 parser.add_argument("--backward_pull_dir", type=str, default="backward")
 
+# will load load all files from range[0] to file_range[1]
 parser.add_argument("--range", type=str,  default="0 10")
 
+# which trajectory file to exclude
 parser.add_argument("--exclude", type=str,  default=" ")
 
 parser.add_argument("--pulling_speed", type=float,  default=0.1)  # Angstrom per ps = speed in A per step / (2*10**(-3))
 parser.add_argument("--force_constant", type=float,  default=7.2) # kcal/mol/A^2
 parser.add_argument("--lambda_range", type=str,  default="-20. 20.") # Angstrom
 
-parser.add_argument("--ntrajs_per_block", type=int,  default=10)
 parser.add_argument("--out", type=str,  default="pull_data.nc")
 
 args = parser.parse_args()
@@ -72,6 +75,7 @@ def _lambda_t(pulling_times, pulling_speed, z0):
 
 # -----------
 
+
 ks = 100. * BETA * args.force_constant             # kT per nm^2
 lambda_min = float(args.lambda_range.split()[0])
 lambda_max = float(args.lambda_range.split()[1])
@@ -102,31 +106,26 @@ dt = pulling_times_F[1] - pulling_times_F[0]
 nsteps = pulling_times_F.shape[0]
 assert nsteps == pulling_times_R.shape[0]
 
-assert len(forward_files) %  args.ntrajs_per_block == 0, "total number of data files must be multiple of ntrajs_per_block"
-nrepeats = len(forward_files) / args.ntrajs_per_block
+total_ntrajs = len(forward_files)
+zF_ts = np.zeros([total_ntrajs, nsteps], dtype=float)
+wF_ts = np.zeros([total_ntrajs, nsteps], dtype=float)
+
+zR_ts = np.zeros([total_ntrajs, nsteps], dtype=float)
+wR_ts = np.zeros([total_ntrajs, nsteps], dtype=float)
 
 
-zF_ts = np.zeros([nrepeats, args.ntrajs_per_block, nsteps], dtype=float)
-wF_ts = np.zeros([nrepeats, args.ntrajs_per_block, nsteps], dtype=float)
+for i, (f_file, b_file) in enumerate(zip(forward_files, backward_files)):
+    print("loading " + f_file)
+    _, zF_t, wF_t = _time_z_work(f_file, args.pulling_speed)
+    assert zF_t.shape[0] == nsteps, f_file + " do not have correct timesteps"
+    zF_ts[i, :] = zF_t
+    wF_ts[i, :] = wF_t
 
-zR_ts = np.zeros([nrepeats, args.ntrajs_per_block, nsteps], dtype=float)
-wR_ts = np.zeros([nrepeats, args.ntrajs_per_block, nsteps], dtype=float)
-
-icount = -1
-for repeat in range(nrepeats):
-    for traj in range(args.ntrajs_per_block):
-        icount += 1
-        print "loading ", icount
-
-        _, zF_t, wF_t = _time_z_work(forward_files[icount], args.pulling_speed)
-        assert zF_t.shape[0] == nsteps, forward_files[icount] + " do not have correct timesteps"
-        zF_ts[repeat, traj, :] = zF_t
-        wF_ts[repeat, traj, :] = wF_t
-
-        _, zR_t, wR_t = _time_z_work(backward_files[icount], -args.pulling_speed)
-        assert zR_t.shape[0] == nsteps, backward_files[icount] + " do not have correct timesteps"
-        zR_ts[repeat, traj, :] = zR_t
-        wR_ts[repeat, traj, :] = wR_t
+    print("loading " + b_file)
+    _, zR_t, wR_t = _time_z_work(b_file, -args.pulling_speed)
+    assert zR_t.shape[0] == nsteps, b_file + " do not have correct timesteps"
+    zR_ts[i, :] = zR_t
+    wR_ts[i, :] = wR_t
 
 lambda_F /= 10.     # to nm
 lambda_R /= 10.     # to nm
