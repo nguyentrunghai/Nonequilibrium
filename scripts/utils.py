@@ -291,3 +291,26 @@ def stride_lambda_indices(lambda_F, lambda_R, n):
     return indices_F, indices_R
 
 
+def _all_close_scalar_array(scalar, array):
+    replicated = np.array([scalar] * array.shape[0])
+    return np.allclose(replicated, array)
+
+
+def _allclose_where(scalar, array, threshold=1e-5):
+    assert np.abs(array[1] - array[1]) > threshold, "threshold is too small"
+    replicated = np.array([scalar] * array.shape[0])
+    near_zero = np.abs(array - replicated)
+    near_zero = np.where(near_zero < threshold)
+    if len(near_zero) == 0:
+        return None
+    else:
+        return near_zero[0]
+
+def closest_sub_array(source, reference):
+    """
+    :param source: 1d array, the array from which the sub-array are to be extracted
+    :param reference: 1d array, the reference array to extract the sub-array
+    :return: sub_array_index: 1d array, indices into source to extract the sub-array
+    """
+    for ref_val in reference:
+        idx = np.where()
