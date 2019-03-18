@@ -318,7 +318,7 @@ def closest_sub_array(source, reference, threshold=1e-5):
         idx = _allclose_where(ref_val, _source, threshold=threshold)
         if idx is not None:
             indices.append(idx)
-            # this will avoid duplicating index for symmetric lambda
+            # this will avoid duplicating indices for repeated values in source
             _source[:idx] = np.nan
     return np.array(indices)
 
