@@ -296,7 +296,8 @@ def _allclose_where(scalar, array, threshold=1e-5):
     replicated = np.array([scalar] * array.shape[0])
     near_zero = np.abs(array - replicated)
     near_zero = np.where(near_zero < threshold)
-    if len(near_zero) == 0:
+    print(near_zero)
+    if len(near_zero[0]) == 0:
         return None
     else:
         return near_zero[0][0]
