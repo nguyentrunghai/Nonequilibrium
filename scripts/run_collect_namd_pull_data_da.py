@@ -14,10 +14,15 @@ from _IO import save_to_nc
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--pull_dir", type=str, default="20A_per_2ns")
+parser.add_argument("--forward_pull_dir", type=str, default="forward")
+parser.add_argument("--backward_pull_dir", type=str, default="backward")
+
+parser.add_argument("--forward_force_file", type=str, default="forward.force")
+parser.add_argument("--backward_force_file", type=str, default="backward.force")
+
+parser.add_argument("--protocol", type=str, default="symmetric")
 
 parser.add_argument("--range", type=str,  default="0 200")
-parser.add_argument("--f_b_breakpoint", type=int,  default=10)
 
 parser.add_argument("--exclude", type=str,  default=" ")
 
@@ -25,9 +30,6 @@ parser.add_argument("--pulling_speed", type=float,  default=0.01) # Angstrom per
 parser.add_argument("--force_constant", type=float,  default=7.2) # kcal/mol/A^2
 parser.add_argument("--lambda_range", type=str,  default="13. 33.")
 
-parser.add_argument( "--take_only_half",            action="store_true", default=False)
-
-parser.add_argument("--ntrajs_per_block", type=int,  default=10)
 parser.add_argument("--out", type=str,  default="pull_data.nc")
 
 args = parser.parse_args()
@@ -35,9 +37,6 @@ args = parser.parse_args()
 KB = 0.0019872041   # kcal/mol/K
 TEMPERATURE = 300.
 BETA = 1/KB/TEMPERATURE
-
-FORWARD_FORCE_FILE = "forward.force"
-BACKWARD_FORCE_FILE = "backward.force"
 
 
 def _time_z_work(tcl_force_out_file, pulling_speed):
@@ -78,27 +77,35 @@ def _combine_forward_backward(forward_force_file, backward_force_file,
                               pulling_speed,
                               lambda_min, lambda_max):
     t_F, zF_t, wF_t = _time_z_work(forward_force_file, pulling_speed)
-    t_R, zR_t, wR_t = _time_z_work(backward_force_file, - pulling_speed)
+    t_R, zR_t, wR_t = _time_z_work(backward_force_file, -pulling_speed)
 
-    lambda_F = _lambda_t(t_F, pulling_speed, lambda_min)
-    lambda_R = _lambda_t(t_R, - pulling_speed, lambda_max)
-    lambda_t = np.concatenate( (lambda_F, lambda_R[1:]) )
+    l_F = _lambda_t(t_F, pulling_speed, lambda_min)
+    l_R = _lambda_t(t_R, -pulling_speed, lambda_max)
+    lambda_F = np.concatenate((l_F, l_R[1:]))
+    lambda_R = lambda_F
 
     pulling_times = np.concatenate( (t_F, t_R[1:] + t_F[-1]) )
     z_t = np.concatenate( (zF_t, zR_t[1:]) )
     w_t = np.concatenate( (wF_t, wR_t[1:] + wF_t[-1]) )
-    return pulling_times, lambda_t, z_t, w_t
+    return pulling_times, lambda_F, lambda_R, z_t, w_t
 
 
 def _take_only_forward(forward_force_file, pulling_speed, lambda_min):
     t_F, zF_t, wF_t = _time_z_work(forward_force_file, pulling_speed)
-    lambda_t = _lambda_t(t_F, pulling_speed, lambda_min)
+    lambda_F = _lambda_t(t_F, pulling_speed, lambda_min)
     pulling_times = t_F
-    z_t = zF_t
-    w_t = wF_t
-    return pulling_times, lambda_t, z_t, w_t
+    return pulling_times, lambda_F, zF_t, wF_t
+
+
+def _take_only_backward(backward_force_file, pulling_speed, lambda_max):
+    t_R, zR_t, wR_t = _time_z_work(backward_force_file, -pulling_speed)
+    lambda_R = _lambda_t(t_R, -pulling_speed, lambda_max)
+    pulling_times = t_R
+    return pulling_times, lambda_R, zR_t, wR_t
 
 # -----------
+
+assert args.protocol in ["symmetric", "asymmetric"], "Unrecognized protocol"
 
 ks = 100. * BETA * args.force_constant
 lambda_min = float(args.lambda_range.split()[0])
@@ -111,21 +118,18 @@ exclude = [int(s) for s in args.exclude.split()]
 print("exclude", exclude)
 
 indices_to_collect = [i for i in range(start, end) if i not in exclude]
-forward_files = [os.path.join(args.pull_dir, "%d"%i, FORWARD_FORCE_FILE) for i in indices_to_collect]
-backward_files = [os.path.join(args.pull_dir, "%d"%i, BACKWARD_FORCE_FILE) for i in indices_to_collect]
+forward_files = [os.path.join(args.forward_pull_dir, "%d"%i, args.forward_force_file) for i in indices_to_collect]
+backward_files = [os.path.join(args.backward_pull_dir, "%d"%i, args.backward_force_file) for i in indices_to_collect]
 
-if args.take_only_half:
-    pulling_times, lambda_t, z_t, w_t = _take_only_forward(forward_files[0], args.pulling_speed, lambda_min)
+if args.protocol == "symmetric":
+    pulling_times, lambda_sym, z_t, w_t = _combine_forward_backward(forward_files[0], backward_files[0],
+                                                                  args.pulling_speed, lambda_min, lambda_max)
 else:
-    pulling_times, lambda_t, z_t, w_t = _combine_forward_backward(forward_files[0], backward_files[0],
-                                                              args.pulling_speed, lambda_min, lambda_max)
+    pulling_times, lambda_t, z_t, w_t = _take_only_forward(forward_files[0], args.pulling_speed, lambda_min)
 
 
 dt = pulling_times[1] - pulling_times[0]
 nsteps = pulling_times.shape[0]
-assert len(forward_files) %  args.ntrajs_per_block == 0, "total number of data files must be multiple of ntrajs_per_block"
-nrepeats = len(forward_files) / args.ntrajs_per_block
-
 
 z_ts = np.zeros([nrepeats, args.ntrajs_per_block, nsteps], dtype=float)
 w_ts = np.zeros([nrepeats, args.ntrajs_per_block, nsteps], dtype=float)
