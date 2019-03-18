@@ -294,7 +294,6 @@ def stride_lambda_indices(lambda_F, lambda_R, n):
 
 
 def _allclose_where(scalar, array, threshold=1e-5):
-    assert np.nanmean(np.abs(array[1:] - array[:-1])) < threshold, "threshold is too big"
     replicated = np.array([scalar] * array.shape[0])
     near_zero = np.abs(array - replicated)
     near_zero = np.where(near_zero < threshold)
@@ -312,6 +311,7 @@ def closest_sub_array(source, reference, threshold=1e-5):
     :param threshold: float, source and reference are the same if their difference less than threshold
     :return: sub_array_index: 1d array, indices into source to extract the sub-array
     """
+    assert np.nanmean(np.abs(source[1:] - source[:-1])) > threshold, "threshold is too big"
     _source = copy.deepcopy(source)
     indices = []
     for ref_val in reference:
