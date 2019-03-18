@@ -2,6 +2,8 @@
 from __future__ import print_function
 from __future__ import division
 
+import copy
+
 import numpy as np
 import pandas as pd
 
@@ -296,7 +298,7 @@ def _allclose_where(scalar, array, threshold=1e-5):
     replicated = np.array([scalar] * array.shape[0])
     near_zero = np.abs(array - replicated)
     near_zero = np.where(near_zero < threshold)
-    print(near_zero)
+
     if len(near_zero[0]) == 0:
         return None
     else:
@@ -310,11 +312,14 @@ def closest_sub_array(source, reference, threshold=1e-5):
     :param threshold: float, source and reference are the same if their difference less than threshold
     :return: sub_array_index: 1d array, indices into source to extract the sub-array
     """
+    _source = copy.deepcopy(source)
     indices = []
     for ref_val in reference:
-        idx = _allclose_where(ref_val, source, threshold=threshold)
+        idx = _allclose_where(ref_val, _source, threshold=threshold)
         if idx is not None:
             indices.append(idx)
+            # this will avoid duplicating index for symmetric lambda
+            _source[:idx] = np.nan
     return np.array(indices)
 
 
