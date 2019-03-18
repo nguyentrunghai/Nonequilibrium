@@ -3,6 +3,8 @@ write nc file which contains
 'zF_t', 'wF_t', 'zR_t', 'wR_t', 'ks',
 'lambda_F', 'lambda_R', 'pulling_times', 'dt'
 """
+from __future__ import print_function
+from __future__ import division
 
 import os
 import argparse
@@ -122,20 +124,27 @@ forward_files = [os.path.join(args.forward_pull_dir, "%d"%i, args.forward_force_
 backward_files = [os.path.join(args.backward_pull_dir, "%d"%i, args.backward_force_file) for i in indices_to_collect]
 
 if args.protocol == "symmetric":
-    pulling_times, lambda_sym, z_t, w_t = _combine_forward_backward(forward_files[0], backward_files[0],
+    pulling_times, lambda_F, lambda_R, _, _ = _combine_forward_backward(forward_files[0], backward_files[0],
                                                                   args.pulling_speed, lambda_min, lambda_max)
 else:
-    pulling_times, lambda_t, z_t, w_t = _take_only_forward(forward_files[0], args.pulling_speed, lambda_min)
+    pulling_times, lambda_F, _, _ = _take_only_forward(forward_files[0], args.pulling_speed, lambda_min)
+    _, lambda_R, _, _ = _take_only_backward(backward_files[0], args.pulling_speed, lambda_max)
 
-
+# TODO
 dt = pulling_times[1] - pulling_times[0]
 nsteps = pulling_times.shape[0]
 
-z_ts = np.zeros([nrepeats, args.ntrajs_per_block, nsteps], dtype=float)
-w_ts = np.zeros([nrepeats, args.ntrajs_per_block, nsteps], dtype=float)
+if args.protocol == "symmetric":
+    ntrajs = len(forward_files)
+else:
+    ntrajs = len(forward_files) + len(backward_files)
+
+assert ntrajs % 2 == 0, "ntrajs must be even"
+
+z_ts = np.zeros([ntrajs, nsteps], dtype=float)
+w_ts = np.zeros([ntrajs, nsteps], dtype=float)
 
 
-icount = -1
 for repeat in range(nrepeats):
     for traj in range(args.ntrajs_per_block):
         icount += 1
