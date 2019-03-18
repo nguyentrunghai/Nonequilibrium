@@ -315,3 +315,18 @@ def closest_sub_array(source, reference, threshold=1e-5):
         if idx is not None:
             indices.append(idx)
     return np.array(indices)
+
+
+def indices_F_to_R(indices_F, lambda_F, lambda_R):
+    """
+    :param indices_F: indices to extract lambda_F
+    :param lambda_F: forward lambda
+    :param lambda_R: reverse lambda
+    :return: indices_R
+    """
+    indices_R = lambda_R.shape[0] - 1 - indices_F
+    indices_R = indices_R[::-1]
+    if not np.allclose(lambda_F[indices_F], lambda_R[indices_R][::-1]):
+        raise IndexError("The condition lambda_F[indices_F] == lambda_R[indices_R][::-1] is not satisfied.")
+
+    return indices_R
