@@ -299,14 +299,19 @@ def _allclose_where(scalar, array, threshold=1e-5):
     if len(near_zero) == 0:
         return None
     else:
-        return near_zero[0]
+        return near_zero[0][0]
 
 
-def closest_sub_array(source, reference):
+def closest_sub_array(source, reference, threshold=1e-5):
     """
     :param source: 1d array, the array from which the sub-array are to be extracted
     :param reference: 1d array, the reference array to extract the sub-array
+    :param threshold: float, source and reference are the same if their difference less than threshold
     :return: sub_array_index: 1d array, indices into source to extract the sub-array
     """
+    indices = []
     for ref_val in reference:
-        idx = np.where()
+        idx = _allclose_where(ref_val, source, threshold=threshold)
+        if idx is not None:
+            indices.append(idx)
+    return np.array(indices)
