@@ -22,7 +22,7 @@ parser.add_argument("--backward_pull_dir", type=str, default="backward")
 parser.add_argument("--forward_force_file", type=str, default="cuc7.force")
 parser.add_argument("--backward_force_file", type=str, default="cuc7.force")
 
-# will load load all files from range[0] to file_range[1]
+# will load load all files from range[0] to file_range[1]-1
 parser.add_argument("--range", type=str,  default="0 10")
 
 # which trajectory file to exclude
