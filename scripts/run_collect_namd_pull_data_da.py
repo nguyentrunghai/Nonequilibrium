@@ -120,8 +120,10 @@ exclude = [int(s) for s in args.exclude.split()]
 print("exclude", exclude)
 
 indices_to_collect = [i for i in range(start, end) if i not in exclude]
-forward_files = [os.path.join(args.forward_pull_dir, "%d"%i, args.forward_force_file) for i in indices_to_collect]
-backward_files = [os.path.join(args.backward_pull_dir, "%d"%i, args.backward_force_file) for i in indices_to_collect]
+forward_files = [os.path.join(args.forward_pull_dir, "%d"%i, args.forward_force_file)
+                 for i in indices_to_collect]
+backward_files = [os.path.join(args.backward_pull_dir, "%d"%i, args.backward_force_file)
+                  for i in indices_to_collect]
 
 if args.protocol == "symmetric":
     pulling_times, lambda_F, lambda_R, _, _ = _combine_forward_backward(forward_files[0], backward_files[0],
@@ -130,7 +132,7 @@ else:
     pulling_times, lambda_F, _, _ = _take_only_forward(forward_files[0], args.pulling_speed, lambda_min)
     _, lambda_R, _, _ = _take_only_backward(backward_files[0], args.pulling_speed, lambda_max)
 
-# TODO
+
 dt = pulling_times[1] - pulling_times[0]
 nsteps = pulling_times.shape[0]
 
@@ -141,23 +143,21 @@ else:
 
 assert ntrajs % 2 == 0, "ntrajs must be even"
 
+half_ntrajs = ntrajs // 2
+
 z_ts = np.zeros([ntrajs, nsteps], dtype=float)
 w_ts = np.zeros([ntrajs, nsteps], dtype=float)
 
+for i, (f_file, b_file) in enumerate(zip(forward_files, backward_files)):
+    if args.protocol == "symmetric":
+        _, _, _, z_ts[i, :], w_ts[i, :] = _combine_forward_backward(f_file, b_file, args.pulling_speed,
+                                                                    lambda_min, lambda_max)
+    else:
+        _, _, z_ts[i, :], w_ts[i, :] = _take_only_forward(f_file, args.pulling_speed, lambda_min)
+        _, _, z_ts[i + half_ntrajs, :], w_ts[i + half_ntrajs, :] =  _take_only_backward(b_file,
+                                                                                        args.pulling_speed, lambda_max)
 
-for repeat in range(nrepeats):
-    for traj in range(args.ntrajs_per_block):
-        icount += 1
-        print "loading ", icount
 
-        if args.take_only_half:
-            _, _, z_t, w_t = _take_only_forward(forward_files[icount], args.pulling_speed, lambda_min)
-
-        else:
-            _, _, z_t, w_t = _combine_forward_backward(forward_files[icount], backward_files[icount],
-                                                   args.pulling_speed, lambda_min, lambda_max)
-        z_ts[repeat, traj, :] = z_t
-        w_ts[repeat, traj, :] = w_t
 
 lambda_t /= 10.            # to nm
 z_ts     /= 10.            # to nm
