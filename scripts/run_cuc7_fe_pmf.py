@@ -30,7 +30,7 @@ parser.add_argument( "--pmf_upper_edge",            type=float, default=2)
 parser.add_argument( "--pmf_nbins", type=int, default=20)
 
 # some number or -999 (means None)
-parser.add_argument( "--symmetric_center",   type=float, default=0)
+parser.add_argument( "--symmetric_center",   type=float, default=-999)
 
 # which side to wrap z, left, right or none
 parser.add_argument( "--side_to_wrap_z",   type=str, default="none")
@@ -89,7 +89,7 @@ def _time_series_indices(lambda_F, lambda_R, us_fe_file, system_type, protocol_t
     print("indices_F", indices_F)
     print("lambda_F[indices_F]", lambda_F[indices_F])
     print("us_lambdas", us_lambdas)
-    
+
     print("lambda_F.shape", lambda_F.shape)
     print("indices_F.shape", indices_F.shape)
     print("us_lambdas.shape", us_lambdas.shape)
@@ -140,6 +140,8 @@ if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
     pmf_bin_edges = pmf_bin_edges[:half_len]
 
 print("pmf_bin_edges", pmf_bin_edges)
+
+# TODO
 
 if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
     if symmetric_center is None:
