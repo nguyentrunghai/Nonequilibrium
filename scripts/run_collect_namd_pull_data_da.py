@@ -149,13 +149,15 @@ z_ts = np.zeros([ntrajs, nsteps], dtype=float)
 w_ts = np.zeros([ntrajs, nsteps], dtype=float)
 
 for i, (f_file, b_file) in enumerate(zip(forward_files, backward_files)):
+    print("loading:", f_file)
+    print("loading:", b_file)
     if args.protocol == "symmetric":
         _, _, _, z_ts[i, :], w_ts[i, :] = _combine_forward_backward(f_file, b_file, args.pulling_speed,
                                                                     lambda_min, lambda_max)
     else:
         _, _, z_ts[i, :], w_ts[i, :] = _take_only_forward(f_file, args.pulling_speed, lambda_min)
-        _, _, z_ts[i + half_ntrajs, :], w_ts[i + half_ntrajs, :] =  _take_only_backward(b_file,
-                                                                                        args.pulling_speed, lambda_max)
+        _, _, z_ts[i + half_ntrajs, :], w_ts[i + half_ntrajs, :] = _take_only_backward(b_file,
+                                                                                    args.pulling_speed, lambda_max)
 
 lambda_F /= 10.            # to nm
 lambda_R /= 10.            # to nm
