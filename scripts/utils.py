@@ -293,33 +293,29 @@ def stride_lambda_indices(lambda_F, lambda_R, n):
     return indices_F, indices_R
 
 
-def _allclose_where(scalar, array, threshold=1e-5):
+def _close_where(scalar, array):
     replicated = np.array([scalar] * array.shape[0])
     near_zero = np.abs(array - replicated)
-    near_zero = np.where(near_zero < threshold)
-
-    if len(near_zero[0]) == 0:
-        return None
-    else:
-        return near_zero[0][0]
+    return np.argmin(near_zero)
 
 
-def closest_sub_array(source, reference, threshold=1e-5):
+def closest_sub_array(source, reference, threshold=1e-3):
     """
     :param source: 1d array, the array from which the sub-array are to be extracted
     :param reference: 1d array, the reference array to extract the sub-array
     :param threshold: float, source and reference are the same if their difference less than threshold
     :return: sub_array_index: 1d array, indices into source to extract the sub-array
     """
-    assert np.nanmean(np.abs(source[1:] - source[:-1])) > threshold, "threshold is too big"
     _source = copy.deepcopy(source)
     indices = []
-    for ref_val in reference:
-        idx = _allclose_where(ref_val, _source, threshold=threshold)
-        if idx is not None:
-            indices.append(idx)
-            # this will avoid duplicating indices for repeated values in source
-            _source[:idx] = np.nan
+
+    for i, ref_val in enumerate(reference):
+        idx = _close_where(ref_val, _source)
+        if np.abs(ref_val - source[idx]) > threshold:
+            raise IndexError("element %d of array is too different from %d of ref"%(idx, i))
+        indices.append(idx)
+        _source[idx] = np.inf
+
     return np.array(indices)
 
 
