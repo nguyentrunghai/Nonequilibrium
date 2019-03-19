@@ -157,26 +157,25 @@ for i, (f_file, b_file) in enumerate(zip(forward_files, backward_files)):
         _, _, z_ts[i + half_ntrajs, :], w_ts[i + half_ntrajs, :] =  _take_only_backward(b_file,
                                                                                         args.pulling_speed, lambda_max)
 
-
-
-lambda_t /= 10.            # to nm
-z_ts     /= 10.            # to nm
-w_ts     = w_ts*BETA       # kcal/mol to KT/mol
-
-out_nc_handle = nc.Dataset(args.out, "w", format="NETCDF4")
+lambda_F /= 10.            # to nm
+lambda_R /= 10.            # to nm
+z_ts /= 10.            # to nm
+w_ts *= BETA       # kcal/mol to KT/mol
 
 data = {"dt" : np.array([dt], dtype=float),
         "pulling_times" : pulling_times,
         "ks" : np.array([ks]),
-        "lambda_F" : lambda_t,
-        "wF_t" : w_ts[ : args.f_b_breakpoint, :, :],
-        "zF_t" : z_ts[ : args.f_b_breakpoint, :, :],
+        "lambda_F" : lambda_F,
 
-        "lambda_R": lambda_t,
-        "wR_t" : w_ts[args.f_b_breakpoint :, :, :],
-        "zR_t" : z_ts[args.f_b_breakpoint :, :, :],
+        "wF_t" : w_ts[ : half_ntrajs, :],
+        "zF_t" : z_ts[ : half_ntrajs, :],
+
+        "lambda_R": lambda_R,
+        "wR_t" : w_ts[half_ntrajs :, :],
+        "zR_t" : z_ts[half_ntrajs :, :],
         }
 
+out_nc_handle = nc.Dataset(args.out, "w", format="NETCDF4")
 save_to_nc(data, out_nc_handle)
 out_nc_handle.close()
 
