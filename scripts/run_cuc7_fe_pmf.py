@@ -89,6 +89,10 @@ def _time_series_indices(lambda_F, lambda_R, us_fe_file, system_type, protocol_t
     print("indices_F", indices_F)
     print("lambda_F[indices_F]", lambda_F[indices_F])
     print("us_lambdas", us_lambdas)
+    
+    print("lambda_F.shape", lambda_F.shape)
+    print("indices_F.shape", indices_F.shape)
+    print("us_lambdas.shape", us_lambdas.shape)
 
     indices_R = indices_F_to_R(indices_F, lambda_F, lambda_R)
     return indices_F, indices_R
@@ -127,7 +131,7 @@ else:
 
 print("symmetric_center", symmetric_center)
 
-pmf_bin_edges = _pmf_bin_edges(args.pmf_lower_edge, args.pmf_lower_edge, args.pmf_nbins, symmetric_center)
+pmf_bin_edges = _pmf_bin_edges(args.pmf_lower_edge, args.pmf_upper_edge, args.pmf_nbins, symmetric_center)
 
 # this means pulling is done only half way through
 if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
