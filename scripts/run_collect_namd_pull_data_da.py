@@ -8,6 +8,7 @@ from __future__ import division
 
 import os
 import argparse
+import copy
 
 import numpy as np
 import netCDF4 as nc
@@ -84,7 +85,7 @@ def _combine_forward_backward(forward_force_file, backward_force_file,
     l_F = _lambda_t(t_F, pulling_speed, lambda_min)
     l_R = _lambda_t(t_R, -pulling_speed, lambda_max)
     lambda_F = np.concatenate((l_F, l_R[1:]))
-    lambda_R = lambda_F
+    lambda_R = copy.deepcopy(lambda_F)
 
     pulling_times = np.concatenate( (t_F, t_R[1:] + t_F[-1]) )
     z_t = np.concatenate( (zF_t, zR_t[1:]) )
