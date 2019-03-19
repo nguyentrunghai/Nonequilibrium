@@ -40,7 +40,7 @@ parser.add_argument( "--nfe_points", type=int, default=21)
 parser.add_argument( "--pmf_nbins", type=int, default=20)
 
 # some number or -999 (means None)
-parser.add_argument( "--symmetric_center",   type=float, default=0)
+parser.add_argument( "--symmetric_center",   type=float, default=-999)
 
 # which side to wrap z, left, right or none
 parser.add_argument( "--side_to_wrap_z",   type=str, default="none")
