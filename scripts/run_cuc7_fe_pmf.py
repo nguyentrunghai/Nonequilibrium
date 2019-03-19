@@ -5,17 +5,13 @@ from __future__ import division
 
 import argparse
 import pickle
+import copy
 
-import netCDF4 as nc
 import numpy as np
 
 from _IO import load_1d_sim_results
-from utils import stride_lambda_indices
-from utils import equal_spaced_bins
-from utils import bin_centers
 from utils import right_wrap, left_wrap
-
-from models_1d import U0_sym, U0_asym, V, U_sym, U_asym, numerical_df_t
+from utils import closest_sub_array, indices_F_to_R
 
 from _fe_pmf import unidirectional_fe, unidirectional_pmf
 from _fe_pmf import bidirectional_fe, bidirectional_pmf
@@ -24,6 +20,8 @@ from _fe_pmf import symmetric_fe, symmetric_pmf
 parser = argparse.ArgumentParser()
 
 parser.add_argument( "--pulling_data_nc_file", type=str, default="work.nc")
+# to read lambdas from umbrella sampling
+parser.add_argument("--us_fe_file", type=str, default="us_fe.pkl")
 
 # lower and upper edges are taken from pmf_min_max/
 parser.add_argument( "--pmf_lower_edge",            type=float, default=1)
@@ -59,50 +57,41 @@ parser.add_argument( "--nbootstraps",  type=int, default=10)
 args = parser.parse_args()
 
 
-def _pmf_bin_edges(pulling_files, nbins, symmetric_center):
-    trajs = []
-    for f in pulling_files:
-        data = nc.Dataset(f, "r")
-        zF_t = data.variables["zF_t"]
-        zR_t = data.variables["zR_t"]
-        trajs.append(zF_t)
-        trajs.append(zR_t)
-    return equal_spaced_bins(trajs, nbins, symmetric_center=symmetric_center)
+def _pmf_bin_edges(lower, upper, nbins, symmetric_center):
 
+    if symmetric_center is not None:
+        assert lower < symmetric_center < upper, "symmetric_center is not in between [min, max]"
 
-def num_fe(pulling_data, system_type, timeseries_indices):
-    if system_type == "symmetric":
-        U = U_sym
-    elif system_type == "asymmetric":
-        U = U_asym
+        left_interval = symmetric_center - lower
+        right_interval = upper - symmetric_center
 
-    ks = pulling_data["ks"]
-    dt = pulling_data["dt"]
-    lambda_F = pulling_data["lambda_F"][timeseries_indices]
+        interval = np.max([left_interval, right_interval])
 
-    num_df_t = numerical_df_t(U, ks, lambda_F, limit=5.)
+        lower = symmetric_center - interval
+        upper = symmetric_center + interval
 
-    free_energy = {}
-    free_energy["lambdas"] = lambda_F
-    free_energy["fe"] = num_df_t
+    bin_edges = np.linspace(lower, upper, nbins + 1)
 
-    return free_energy
+    return bin_edges
 
+def _time_series_indices(lambda_F, lambda_R, us_fe_file, system_type, protocol_type):
+    us_lambdas = pickle.load(open(us_fe_file, "r"))["lambdas"]
 
-def _exact_pmf(system_type, pmf_bin_edges):
-    if system_type == "symmetric":
-        U0 = U0_sym
-    elif system_type == "asymmetric":
-        U0 = U0_asym
+    if (system_type == "symmetric") and (protocol_type == "asymmetric"):
+        # cut us_lambdas half
+        us_lambdas = us_lambdas[: us_lambdas.shape[0]//2]
 
-    centers = bin_centers(pmf_bin_edges)
-    exact_pmf = U0(centers)
+    if (system_type == "asymmetric") and (protocol_type == "symmetric"):
+        # double us_lambdas
+        us_lambdas = np.concatenate([us_lambdas[:-1], us_lambdas[::-1]])
 
-    pmf = {}
-    pmf["pmf_bin_edges"] = pmf_bin_edges
-    pmf["pmf"] = exact_pmf
+    indices_F = closest_sub_array(lambda_F, us_lambdas, threshold=1e-3)
+    print("indices_F", indices_F)
+    print("lambda_F[indices_F]", lambda_F[indices_F])
+    print("us_lambdas", us_lambdas)
 
-    return pmf
+    indices_R = indices_F_to_R(indices_F, lambda_F, lambda_R)
+    return indices_F, indices_R
 
 
 if args.system_type not in ["symmetric", "asymmetric"]:
@@ -120,19 +109,16 @@ if not all(e in ["uf", "ur", "b", "s"] for e in estimators):
 
 pulling_data = load_1d_sim_results(args.pulling_data_nc_file)
 
-timeseries_indices_F, timeseries_indices_R = stride_lambda_indices(pulling_data["lambda_F"],
-                                                                   pulling_data["lambda_R"],
-                                                                   args.nfe_points)
+indices_F, indices_R = _time_series_indices(pulling_data["lambda_F"], pulling_data["lambda_R"],
+                                            args.us_fe_file,
+                                            args.system_type,
+                                            args.protocol_type)
 
 ntrajs_list = [int(s) for s in args.ntrajs_per_block.split()]
 total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
 if np.any(np.array(ntrajs_list) > total_ntrajs_in_data):
     raise ValueError("Number of trajectories requested is larger than available in data (%d)"%total_ntrajs_in_data)
 
-print("timeseries_indices_F", timeseries_indices_F)
-print("timeseries_indices_R", timeseries_indices_R)
-print("Reduced lambda_F", pulling_data["lambda_F"][timeseries_indices_F])
-print("Reduced lambda_R", pulling_data["lambda_R"][timeseries_indices_R])
 
 if args.symmetric_center == -999:
     symmetric_center = None
@@ -141,11 +127,7 @@ else:
 
 print("symmetric_center", symmetric_center)
 
-pulling_files = [args.pulling_data_nc_file] + [f for f in args.other_pulling_data_nc_files.split()]
-print("Data Files to consider for calculating for PMF bins:")
-print("\n".join(pulling_files))
-
-pmf_bin_edges = _pmf_bin_edges(pulling_files, args.pmf_nbins, symmetric_center)
+pmf_bin_edges = _pmf_bin_edges(args.pmf_lower_edge, args.pmf_lower_edge, args.pmf_nbins, symmetric_center)
 
 # this means pulling is done only half way through
 if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
