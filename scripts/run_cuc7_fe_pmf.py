@@ -13,6 +13,8 @@ from _IO import load_1d_sim_results
 from utils import right_wrap, left_wrap
 from utils import closest_sub_array, indices_F_to_R
 
+from models_1d import V
+
 from _fe_pmf import unidirectional_fe, unidirectional_pmf
 from _fe_pmf import bidirectional_fe, bidirectional_pmf
 from _fe_pmf import symmetric_fe, symmetric_pmf
@@ -26,7 +28,9 @@ parser.add_argument("--us_fe_file", type=str, default="us_fe.pkl")
 # lower and upper edges are taken from pmf_min_max/
 parser.add_argument( "--pmf_lower_edge",            type=float, default=1)
 parser.add_argument( "--pmf_upper_edge",            type=float, default=2)
+
 # number of bins for the PMF
+# when system_type=="symmetric" and protocol_type=="asymmetric", only half of the bins are kept
 parser.add_argument( "--pmf_nbins", type=int, default=20)
 
 # some number or -999 (means None)
@@ -46,10 +50,10 @@ parser.add_argument( "--protocol_type", type=str, default="symmetric")
 parser.add_argument( "--estimators",  type=str, default="uf b s")
 
 # number of blocks of trajectories
-parser.add_argument( "--nblocks",  type=int, default=100)
+parser.add_argument( "--nblocks",  type=int, default=10)
 
 # numbers of trajectories
-parser.add_argument( "--ntrajs_per_block",  type=str, default="50 100 150 200")
+parser.add_argument( "--ntrajs_per_block",  type=str, default="5 10 15 20")
 
 # number of bootstrap samples
 parser.add_argument( "--nbootstraps",  type=int, default=10)
@@ -141,7 +145,6 @@ if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
 
 print("pmf_bin_edges", pmf_bin_edges)
 
-# TODO
 
 if args.system_type == "symmetric" and args.protocol_type == "asymmetric":
     if symmetric_center is None:
@@ -164,12 +167,6 @@ if args.system_type == "symmetric" and args.protocol_type == "symmetric":
 else:
     symmetrize_pmf = False
 
-num_free_energies = num_fe(pulling_data, args.system_type, timeseries_indices_F)
-exact_pmf = _exact_pmf(args.system_type, pmf_bin_edges)
-
-pickle.dump(num_free_energies, open("fe_" + args.protocol_type + "_numerical" + ".pkl", "w"))
-pickle.dump(exact_pmf, open("pmf_" + args.protocol_type + "_exact" + ".pkl", "w"))
-
 
 for ntrajs in ntrajs_list:
     for estimator in estimators:
@@ -177,10 +174,10 @@ for ntrajs in ntrajs_list:
         if estimator == "uf" or estimator == "ur":
             if estimator == "uf":
                 which_data = "F"
-                timeseries_indices = timeseries_indices_F
+                timeseries_indices = indices_F
             else:
                 which_data = "R"
-                timeseries_indices = timeseries_indices_R
+                timeseries_indices = indices_R
 
             free_energies = unidirectional_fe(pulling_data, args.nblocks, ntrajs,
                                               timeseries_indices,
@@ -194,7 +191,7 @@ for ntrajs in ntrajs_list:
 
         elif estimator == "b":
             free_energies = bidirectional_fe(pulling_data, args.nblocks, ntrajs,
-                                             timeseries_indices_F,
+                                             indices_F,
                                              nbootstraps=args.nbootstraps)
 
             pmfs = bidirectional_pmf(pulling_data, args.nblocks, ntrajs,
@@ -203,7 +200,7 @@ for ntrajs in ntrajs_list:
 
         elif estimator == "s":
             free_energies = symmetric_fe(pulling_data, args.nblocks, ntrajs,
-                                         timeseries_indices_F,
+                                         indices_F,
                                          nbootstraps=args.nbootstraps)
 
             pmfs = symmetric_pmf(pulling_data, args.nblocks, ntrajs,
