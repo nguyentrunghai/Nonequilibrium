@@ -26,8 +26,8 @@ def unidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     if which_data not in ["F", "R"]:
         raise ValueError("Unknown which_data")
 
-    if ntrajs_per_block % 2 != 0:
-        raise ValueError("Number of trajs per block must be even")
+    #if ntrajs_per_block % 2 != 0:
+    #    raise ValueError("Number of trajs per block must be even")
 
     if which_data == "F":
         total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
@@ -93,8 +93,8 @@ def unidirectional_pmf(pulling_data,
     if which_data not in ["F", "R"]:
         raise ValueError("Unknown which_data")
 
-    if ntrajs_per_block % 2 != 0:
-        raise ValueError("Number of trajs per block must be even")
+    #if ntrajs_per_block % 2 != 0:
+    #    raise ValueError("Number of trajs per block must be even")
 
     if which_data == "F":
         total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
@@ -162,8 +162,8 @@ def bidirectional_fe(pulling_data, nblocks, ntrajs_per_block,
     if pulling_data["wF_t"].shape[0] != pulling_data["wR_t"].shape[0]:
         raise ValueError("Forward and reverse must have the same number of trajectories")
 
-    if ntrajs_per_block % 2 != 0:
-        raise ValueError("Number of trajs per block must be even")
+    #if ntrajs_per_block % 2 != 0:
+    #    raise ValueError("Number of trajs per block must be even")
 
     total_ntrajs_in_data = (pulling_data["wF_t"].shape[0] + pulling_data["wR_t"].shape[0]) // 2
 
@@ -224,8 +224,8 @@ def bidirectional_pmf(pulling_data,
     if pulling_data["wF_t"].shape[0] != pulling_data["wR_t"].shape[0]:
         raise ValueError("Forward and reverse must have the same number of trajectories")
 
-    if ntrajs_per_block % 2 != 0:
-        raise ValueError("Number of trajs per block must be even")
+    #if ntrajs_per_block % 2 != 0:
+    #    raise ValueError("Number of trajs per block must be even")
 
     total_ntrajs_in_data = pulling_data["wF_t"].shape[0] + pulling_data["wR_t"].shape[0]
 
@@ -292,8 +292,8 @@ def symmetric_fe(pulling_data, nblocks, ntrajs_per_block,
     :param nbootstraps: int, number of bootstrap samples
     :return: free_energies, dict
     """
-    if ntrajs_per_block % 2 != 0:
-        raise ValueError("Number of trajs per block must be even")
+    #if ntrajs_per_block % 2 != 0:
+    #    raise ValueError("Number of trajs per block must be even")
 
     total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
 
@@ -348,8 +348,8 @@ def symmetric_pmf(pulling_data,
     :param nbootstraps: int, number of bootstrap samples
     :return: pmfs, dict
     """
-    if ntrajs_per_block % 2 != 0:
-        raise ValueError("Number of trajs per block must be even")
+    #if ntrajs_per_block % 2 != 0:
+    #    raise ValueError("Number of trajs per block must be even")
 
     total_ntrajs_in_data = pulling_data["wF_t"].shape[0]
 
