@@ -5,7 +5,6 @@ from __future__ import division
 
 import argparse
 import pickle
-import copy
 
 import numpy as np
 
