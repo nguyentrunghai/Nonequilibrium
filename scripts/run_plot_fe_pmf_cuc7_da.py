@@ -64,11 +64,12 @@ print("free_energies_pmfs_files", free_energies_pmfs_files)
 print("us_fe_file", args.us_fe_file)
 print("us_pmf_file", args.us_pmf_file)
 
-fe_num = pickle.load(open(num_fe_file, "r"))
-fe_num["fe"] = first_to_zero(fe_num["fe"])
+fe_us = pickle.load(open(args.us_fe_file, "r"))
+fe_us["fe"] = first_to_zero(fe_us["fe"])
 
-pmf_exact = pickle.load(open(exact_pmf_file , "r"))
-pmf_exact["pmf"] = min_to_zero(pmf_exact["pmf"])
+pmf_us = dict()
+pmf_us["pmf"] = np.loadtxt(args.us_pmf_file)[:, 1]
+pmf_us["pmf"] = min_to_zero(pmf_us["pmf"])
 
 data_estimator_pairs = args.data_estimator_pairs.split()
 if len(data_estimator_pairs) != len(free_energies_pmfs_files):
