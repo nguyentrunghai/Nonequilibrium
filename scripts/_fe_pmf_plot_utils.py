@@ -64,7 +64,7 @@ def reverse_data_order(data):
     return data
 
 
-def replicate_data(data, system_type):
+def replicate_data_1d(data, system_type):
     """when using the function, we assume that the protocol is asymmetric"""
     if system_type == "symmetric":
         data["free_energies"]["lambdas"] = _replicate(data["free_energies"]["lambdas"], method="to_the_right_of_zero",
@@ -95,6 +95,57 @@ def replicate_data(data, system_type):
         for block in data["free_energies"][bootstrap_key]:
             data["free_energies"][bootstrap_key][block] = _replicate(data["free_energies"][bootstrap_key][block],
                                                                      method="as_is", exclude_last_in_first_half=True)
+
+    # only replicate pmf fot symmetric system but not asymmetric one
+    if system_type == "symmetric":
+        bootstrap_keys = [bt for bt in data["pmfs"] if bt.startswith("bootstrap_")]
+        for bootstrap_key in bootstrap_keys:
+            for block in data["pmfs"][bootstrap_key]:
+                data["pmfs"][bootstrap_key][block] = _replicate(data["pmfs"][bootstrap_key][block], method="as_is",
+                                                                  exclude_last_in_first_half=False)
+    return data
+
+
+def replicate_data_cuc7_da(data, system_type):
+    """when using the function, we assume that the protocol is asymmetric"""
+    if system_type == "symmetric":
+        data["free_energies"]["lambdas"] = _replicate(data["free_energies"]["lambdas"], method="to_the_right_of_zero",
+                                                      exclude_last_in_first_half=False)
+        data["pmfs"]["pmf_bin_edges"] = _replicate(data["pmfs"]["pmf_bin_edges"], method="to_the_right_of_zero",
+                                                   exclude_last_in_first_half=True)
+
+    elif system_type == "asymmetric":
+        data["free_energies"]["lambdas"] = _replicate(data["free_energies"]["lambdas"], method="as_is",
+                                                      exclude_last_in_first_half=True)
+        # for asymmetric systems, the pmf cover the full landscape,
+        # so we don't need to replicate
+    else:
+        raise ValueError("Unrecognized system_type")
+
+    for block in data["free_energies"]["main_estimates"]:
+        if system_type == "symmetric":
+            data["free_energies"]["main_estimates"][block] = _replicate(data["free_energies"]["main_estimates"][block],
+                                                                    method="as_is", exclude_last_in_first_half=False)
+        elif system_type == "asymmetric":
+            data["free_energies"]["main_estimates"][block] = _replicate(data["free_energies"]["main_estimates"][block],
+                                                                        method="as_is",
+                                                                        exclude_last_in_first_half=True)
+
+    # only replicate pmf fot symmetric system but not asymmetric one
+    if system_type == "symmetric":
+        for block in data["pmfs"]["main_estimates"]:
+            data["pmfs"]["main_estimates"][block] = _replicate(data["pmfs"]["main_estimates"][block], method="as_is",
+                                                                 exclude_last_in_first_half=False)
+
+    bootstrap_keys = [bt for bt in data["free_energies"] if bt.startswith("bootstrap_")]
+    for bootstrap_key in bootstrap_keys:
+        for block in data["free_energies"][bootstrap_key]:
+            if system_type == "symmetric":
+                data["free_energies"][bootstrap_key][block] = _replicate(data["free_energies"][bootstrap_key][block],
+                                                                     method="as_is", exclude_last_in_first_half=False)
+            elif system_type == "asymmetric":
+                data["free_energies"][bootstrap_key][block] = _replicate(data["free_energies"][bootstrap_key][block],
+                                                                         method="as_is", exclude_last_in_first_half=True)
 
     # only replicate pmf fot symmetric system but not asymmetric one
     if system_type == "symmetric":
