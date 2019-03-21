@@ -91,7 +91,7 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file_name, "r"))
 
     if label == "s_u":
-        pmf_us["pmf"]["pmf_bin_edges"] = copy.deepcopy(["pmfs"]["pmf_bin_edges"])
+        pmf_us["pmf"]["pmf_bin_edges"] = copy.deepcopy(data["pmfs"]["pmf_bin_edges"])
 
     # reverse order
     if label == "r_u":
@@ -132,8 +132,8 @@ for label in data_estimator_pairs:
     ys.append(free_energies[label]["y"])
     yerrs.append(free_energies[label]["error"] / 2)  # error bars are one std
 
-xs.append(fe_num["lambdas"])
-ys.append(fe_num["fe"])
+xs.append(fe_us["lambdas"])
+ys.append(fe_us["fe"])
 yerrs.append(None)
 
 if args.xlimits_fe.lower() != "none":
@@ -151,7 +151,7 @@ MARKERS = ["<", ">", "^", "v", "s", "d", "."]
 plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.fe_xlabel, ylabel=args.fe_ylabel,
            out=args.fe_out,
-           legends=data_estimator_pairs + ["num"],
+           legends=data_estimator_pairs + ["us"],
            legend_pos="best",
            legend_ncol=args.legend_ncol_fe,
            legend_fontsize=8,
@@ -182,9 +182,9 @@ for label in data_estimator_pairs:
     yerrs.append(pmfs[label]["error"][start_pmf_ind : end_pmf_ind] / 2)  # error bars are one std
 
 
-end_pmf_ind = len(pmf_exact["pmf"]) - start_pmf_ind
-xs.append(bin_centers(pmf_exact["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
-ys.append(pmf_exact["pmf"][start_pmf_ind : end_pmf_ind])
+end_pmf_ind = len(pmf_us["pmf"]) - start_pmf_ind
+xs.append(bin_centers(pmf_us["pmf_bin_edges"])[start_pmf_ind : end_pmf_ind])
+ys.append(pmf_us["pmf"][start_pmf_ind : end_pmf_ind])
 yerrs.append(None)
 
 if args.xlimits_pmf.lower() != "none":
