@@ -1,6 +1,7 @@
 """
-TODO:
-for f_u, r_u and fr_b, do not replicate
+the units of pull free energies and pmf are KT
+the units of us (mbar) free energies are KT
+the units of us (wham) pmfs are kcal/mol
 """
 from __future__ import print_function
 from __future__ import division
@@ -11,6 +12,7 @@ from __future__ import division
 import argparse
 import pickle
 import os
+import copy
 
 import numpy as np
 
@@ -33,10 +35,10 @@ parser.add_argument( "--system_type", type=str, default="symmetric")
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
 parser.add_argument("--fe_xlabel", type=str, default="$\lambda$ (nm)")
-parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$ (kcal/mol)")
+parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$ (RT)")
 
 parser.add_argument("--pmf_xlabel", type=str, default="$d$")
-parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(d)$ (kcal/mol)")
+parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(d)$ (RT)")
 # for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
 # for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
 parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=0)
@@ -57,6 +59,9 @@ parser.add_argument("--pmf_out", type=str, default="pmf.pdf")
 
 args = parser.parse_args()
 
+KB = 0.0019872041   # kcal/mol/K
+TEMPERATURE = 300.
+BETA = 1/KB/TEMPERATURE
 
 free_energies_pmfs_files = [os.path.join(args.pull_data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
@@ -69,6 +74,7 @@ fe_us["fe"] = first_to_zero(fe_us["fe"])
 
 pmf_us = dict()
 pmf_us["pmf"] = np.loadtxt(args.us_pmf_file)[:, 1]
+pmf_us["pmf"] *= BETA   # kcal/mol to KT/mol or RT
 pmf_us["pmf"] = min_to_zero(pmf_us["pmf"])
 
 data_estimator_pairs = args.data_estimator_pairs.split()
@@ -81,8 +87,11 @@ for label in data_estimator_pairs:
 
 free_energies = {}
 pmfs = {}
-for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
-    data = pickle.load(open(file, "r"))
+for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
+    data = pickle.load(open(file_name, "r"))
+
+    if label == "s_u":
+        pmf_us["pmf"]["pmf_bin_edges"] = copy.deepcopy(["pmfs"]["pmf_bin_edges"])
 
     # reverse order
     if label == "r_u":
@@ -91,14 +100,14 @@ for file, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     # replicate data
     if args.want_right_replicate_for_asym:
         if label in ["f_u", "r_u", "fr_b"]:
-            print("Right replicat for", label)
+            print("Right replicate for", label)
             data = replicate_data(data, args.system_type)
 
     # put first of fes to zero
     data = put_first_of_fe_to_zero(data)
 
     # put argmin of pmf to pmf_exact["pmf"]
-    data = put_argmin_of_pmf_to_target(data, pmf_exact["pmf"])
+    data = put_argmin_of_pmf_to_target(data, pmf_us["pmf"])
 
     fe_x = data["free_energies"]["lambdas"]
     fe_ys = np.array(data["free_energies"]["main_estimates"].values())
