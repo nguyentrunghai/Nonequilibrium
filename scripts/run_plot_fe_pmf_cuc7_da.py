@@ -19,7 +19,7 @@ import numpy as np
 from utils import bin_centers
 from _plots import plot_lines
 
-from _fe_pmf_plot_utils import first_to_zero, min_to_zero, reverse_data_order, replicate_data
+from _fe_pmf_plot_utils import first_to_zero, min_to_zero, reverse_data_order, replicate_data_cuc7_da
 from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_target
 
 parser = argparse.ArgumentParser()
@@ -101,7 +101,8 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     if args.want_right_replicate_for_asym:
         if label in ["f_u", "r_u", "fr_b"]:
             print("Right replicate for", label)
-            data = replicate_data(data, args.system_type)
+            # TODO check this function from _fe_pmf_utils.py
+            data = replicate_data_cuc7_da(data, args.system_type)
 
     # put first of fes to zero
     data = put_first_of_fe_to_zero(data)
