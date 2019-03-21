@@ -77,6 +77,7 @@ def _pmf_bin_edges(lower, upper, nbins, symmetric_center):
 
     return bin_edges
 
+
 def _time_series_indices(lambda_F, lambda_R, us_fe_file, system_type, protocol_type):
     us_lambdas = pickle.load(open(us_fe_file, "r"))["lambdas"]
 
