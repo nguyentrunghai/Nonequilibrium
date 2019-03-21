@@ -22,21 +22,21 @@ from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_tar
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--data_dir", type=str, default="./")
+parser.add_argument("--pull_data_dir", type=str, default="./")
 
 parser.add_argument("--free_energies_pmfs_files", type=str, default="file1 file2")
-parser.add_argument("--us_fe_file", type=str, default="us_fe.pkl")
-parser.add_argument("--exact_pmf_file", type=str, default="pmf_exact.pkl")
+parser.add_argument("--us_fe_file", type=str, default="fe_us.pkl")
+parser.add_argument("--us_pmf_file", type=str, default="pmf_us.dat")
 
 parser.add_argument( "--system_type", type=str, default="symmetric")
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
-parser.add_argument("--fe_xlabel", type=str, default="$\lambda$")
-parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$")
+parser.add_argument("--fe_xlabel", type=str, default="$\lambda$ (nm)")
+parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$ (kcal/mol)")
 
-parser.add_argument("--pmf_xlabel", type=str, default="$z$")
-parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(z)$")
+parser.add_argument("--pmf_xlabel", type=str, default="$d$")
+parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(d)$ (kcal/mol)")
 # for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
 # for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
 parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=0)
@@ -58,14 +58,11 @@ parser.add_argument("--pmf_out", type=str, default="pmf.pdf")
 args = parser.parse_args()
 
 
-free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
+free_energies_pmfs_files = [os.path.join(args.pull_data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
 
-num_fe_file = os.path.join(args.data_dir, args.num_fe_file)
-print("num_fe_file", num_fe_file)
-
-exact_pmf_file = os.path.join(args.data_dir, args.exact_pmf_file)
-print("exact_pmf_file", exact_pmf_file)
+print("us_fe_file", args.us_fe_file)
+print("us_pmf_file", args.us_pmf_file)
 
 fe_num = pickle.load(open(num_fe_file, "r"))
 fe_num["fe"] = first_to_zero(fe_num["fe"])
