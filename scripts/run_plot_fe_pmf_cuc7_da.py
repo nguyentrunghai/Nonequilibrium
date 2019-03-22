@@ -37,7 +37,7 @@ parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u
 parser.add_argument("--fe_xlabel", type=str, default="$\lambda$ (nm)")
 parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$ (RT)")
 
-parser.add_argument("--pmf_xlabel", type=str, default="$d$")
+parser.add_argument("--pmf_xlabel", type=str, default="$d$ (nm)")
 parser.add_argument("--pmf_ylabel", type=str, default="$\Phi(d)$ (RT)")
 # for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
 # for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
@@ -101,7 +101,6 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     if args.want_right_replicate_for_asym:
         if label in ["f_u", "r_u", "fr_b"]:
             print("Right replicate for", label)
-            # TODO check this function from _fe_pmf_utils.py
             data = replicate_data_cuc7_da(data, args.system_type)
 
     # put first of fes to zero
