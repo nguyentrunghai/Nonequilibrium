@@ -63,6 +63,14 @@ KB = 0.0019872041   # kcal/mol/K
 TEMPERATURE = 300.
 BETA = 1/KB/TEMPERATURE
 
+
+def _down_sampling(array, n_points):
+    indices = np.linspace(0, array.shape[0] - 1, n_points)
+    indices = np.round(indices)
+    indices = indices.astype(indices)
+    return indices
+
+
 free_energies_pmfs_files = [os.path.join(args.pull_data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
 
@@ -91,7 +99,7 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file_name, "r"))
 
     if label == "s_u":
-        pmf_us["pmf"]["pmf_bin_edges"] = copy.deepcopy(data["pmfs"]["pmf_bin_edges"])
+        pmf_us["pmf_bin_edges"] = copy.deepcopy(data["pmfs"]["pmf_bin_edges"])
 
     # reverse order
     if label == "r_u":
@@ -200,7 +208,7 @@ else:
 plot_lines(xs, ys, yerrs=yerrs,
            xlabel=args.pmf_xlabel, ylabel=args.pmf_ylabel,
            out=args.pmf_out,
-           legends=data_estimator_pairs + ["exact"],
+           legends=data_estimator_pairs + ["us"],
            legend_ncol=args.legend_ncol_pmf,
            legend_pos="best",
            legend_fontsize=8,
