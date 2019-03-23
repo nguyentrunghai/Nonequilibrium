@@ -19,6 +19,7 @@ from _plots import plot_lines
 
 from _fe_pmf_plot_utils import first_to_zero, min_to_zero, reverse_data_order, replicate_data_cuc7_da
 from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_target
+from _fe_pmf_plot_utils import replicate
 
 parser = argparse.ArgumentParser()
 
@@ -81,6 +82,9 @@ print("us_pmf_file", args.us_pmf_file)
 
 fe_us = pickle.load(open(args.us_fe_file, "r"))
 fe_us["fe"] = first_to_zero(fe_us["fe"])
+if args.system_type == "asymmetric":
+    fe_us["lambdas"] = replicate(fe_us["lambdas"], "as_is", exclude_last_in_first_half=True)
+    fe_us["fe"] = replicate(fe_us["fe"], "as_is", exclude_last_in_first_half=True)
 
 pmf_us = dict()
 pmf_us["pmf"] = np.loadtxt(args.us_pmf_file)[:, 1]
