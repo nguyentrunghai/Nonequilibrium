@@ -34,6 +34,8 @@ parser.add_argument( "--system_type", type=str, default="symmetric")
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
+parser.add_argument("--n_fe_points_to_plot", type=int, default=0)
+
 parser.add_argument("--fe_xlabel", type=str, default="$\lambda$ (nm)")
 parser.add_argument("--fe_ylabel", type=str, default="$\Delta F_{\lambda}$ (RT)")
 
@@ -136,12 +138,28 @@ xs = []
 ys = []
 yerrs = []
 for label in data_estimator_pairs:
-    xs.append(free_energies[label]["x"])
-    ys.append(free_energies[label]["y"])
-    yerrs.append(free_energies[label]["error"] / 2)  # error bars are one std
+    x = free_energies[label]["x"]
+    y = free_energies[label]["y"]
+    yerr = free_energies[label]["error"] / 2  # error bars are one std
 
-xs.append(fe_us["lambdas"])
-ys.append(fe_us["fe"])
+    if args.n_fe_points_to_plot != 0:
+        indices = _down_sampling(x, args.n_fe_points_to_plot)
+        x = x[indices]
+        y = y[indices]
+        yerr = yerr[indices]
+
+    xs.append(x)
+    ys.append(y)
+    yerrs.append(yerr)
+
+x = fe_us["lambdas"]
+y = fe_us["fe"]
+if args.n_fe_points_to_plot != 0:
+    indices = _down_sampling(x, args.n_fe_points_to_plot)
+    x = x[indices]
+    y = y[indices]
+xs.append(x)
+ys.append(x)
 yerrs.append(None)
 
 if args.xlimits_fe.lower() != "none":
