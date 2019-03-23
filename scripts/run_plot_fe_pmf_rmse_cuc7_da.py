@@ -127,6 +127,7 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     all_data[label] = data
 
 # TODO
+stop
 
 fe_rmse = {}
 fe_rmse_std_error = {}
