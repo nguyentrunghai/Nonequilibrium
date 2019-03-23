@@ -33,6 +33,8 @@ parser.add_argument("--system_type", type=str, default="symmetric")
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
+parser.add_argument("--n_fe_points_to_plot", type=int, default=0)
+
 parser.add_argument("--fe_xlabel", type=str, default="$\lambda$ (nm)")
 parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$] (RT)")
 
@@ -74,7 +76,14 @@ def _rmse_std_error(pull_data, reference):
     return bootstrap_estimates.std(axis=0)
 
 
-free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
+def _down_sampling(array, n_points):
+    indices = np.linspace(0, array.shape[0] - 1, n_points)
+    indices = np.round(indices)
+    indices = indices.astype(int)
+    return indices
+
+
+free_energies_pmfs_files = [os.path.join(args.pull_data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
 
 print("us_fe_file", args.us_fe_file)
@@ -126,28 +135,37 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
 
     all_data[label] = data
 
-# TODO
-stop
 
 fe_rmse = {}
 fe_rmse_std_error = {}
 pmf_rmse = {}
 pmf_rmse_std_error = {}
 for label in all_data:
-    fe_rmse[label] = _rmse(all_data[label]["free_energies"]["main_estimates"], fe_num["fe"])
-    fe_rmse_std_error[label] = _rmse_std_error(all_data[label]["free_energies"], fe_num["fe"])
+    fe_rmse[label] = _rmse(all_data[label]["free_energies"]["main_estimates"], fe_us["fe"])
+    fe_rmse_std_error[label] = _rmse_std_error(all_data[label]["free_energies"], fe_us["fe"])
 
-    pmf_rmse[label] = _rmse(all_data[label]["pmfs"]["main_estimates"], pmf_exact["pmf"])
-    pmf_rmse_std_error[label] = _rmse_std_error(all_data[label]["pmfs"], pmf_exact["pmf"])
+    pmf_rmse[label] = _rmse(all_data[label]["pmfs"]["main_estimates"], pmf_us["pmf"])
+    pmf_rmse_std_error[label] = _rmse_std_error(all_data[label]["pmfs"], pmf_us["pmf"])
 
+# TODO
 # plot fe rmse
 xs = []
 ys = []
 yerrs = []
 for label in data_estimator_pairs:
-    xs.append(all_data[label]["free_energies"]["lambdas"])
-    ys.append(fe_rmse[label])
-    yerrs.append(fe_rmse_std_error[label] / 2)
+    x = all_data[label]["free_energies"]["lambdas"]
+    y = fe_rmse[label]
+    yerr = fe_rmse_std_error[label] / 2
+
+    if args.n_fe_points_to_plot != 0:
+        indices = _down_sampling(x, args.n_fe_points_to_plot)
+        x = x[indices]
+        y = y[indices]
+        yerr = yerr[indices]
+
+    xs.append(x)
+    ys.append(y)
+    yerrs.append(yerr)
 
 if args.xlimits_fe.lower() != "none":
     xlimits_fe = [float(s) for s in args.xlimits_fe.split()]
