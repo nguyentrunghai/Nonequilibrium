@@ -48,7 +48,9 @@ def _replicate(first_half, method, exclude_last_in_first_half=True):
     else:
         return np.hstack([first_half, -second_half])
 
-replcate = _replicate
+
+replicate = _replicate
+
 
 def reverse_data_order(data):
     """Only need to do for free energies"""
