@@ -16,27 +16,28 @@ import numpy as np
 from utils import bin_centers
 from _plots import plot_lines
 
-from _fe_pmf_plot_utils import first_to_zero, min_to_zero, reverse_data_order, replicate_data
+from _fe_pmf_plot_utils import first_to_zero, min_to_zero, reverse_data_order, replicate_data_cuc7_da
 from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_target
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--data_dir", type=str, default="./")
+parser.add_argument("--pull_data_dir", type=str, default="./")
 
 parser.add_argument("--free_energies_pmfs_files", type=str, default="file1 file2")
-parser.add_argument("--num_fe_file", type=str, default="fe_numerical.pkl")
-parser.add_argument("--exact_pmf_file", type=str, default="pmf_exact.pkl")
+parser.add_argument("--us_fe_file", type=str, default="fe_us.pkl")
+parser.add_argument("--us_pmf_file", type=str, default="pmf_us.dat")
 
-parser.add_argument( "--system_type", type=str, default="symmetric")
+parser.add_argument("--system_type", type=str, default="symmetric")
 
 parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u r_u fr_b")
 
-parser.add_argument("--fe_xlabel", type=str, default="$\lambda$")
-parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$]")
+parser.add_argument("--fe_xlabel", type=str, default="$\lambda$ (nm)")
+parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$] (RT)")
 
-parser.add_argument("--pmf_xlabel", type=str, default="$z$")
-parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$]")
-
+parser.add_argument("--pmf_xlabel", type=str, default="$d$ (nm)")
+parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(d)$] (RT)")
+# for symmetric data plot the pmf from pmf[bin_ind_to_start_to_plot] to pmf[len - bin_ind_to_start_to_plot]
+# for asymmetric data plot pmf from pmf[bin_ind_to_start_to_plot] to pmf[len]
 parser.add_argument("--bin_ind_to_start_to_plot", type=int, default=0)
 
 parser.add_argument("--legend_ncol_fe", type=int, default=1)
@@ -53,6 +54,9 @@ parser.add_argument("--pmf_out", type=str, default="pmf_rmse.pdf")
 
 args = parser.parse_args()
 
+KB = 0.0019872041   # kcal/mol/K
+TEMPERATURE = 300.
+BETA = 1/KB/TEMPERATURE
 
 def _rmse(main_estimates, reference):
     squared_deviations = [(estimates - reference)**2 for estimates in main_estimates.values()]
@@ -70,17 +74,16 @@ def _rmse_std_error(pull_data, reference):
 free_energies_pmfs_files = [os.path.join(args.data_dir, f) for f in args.free_energies_pmfs_files.split()]
 print("free_energies_pmfs_files", free_energies_pmfs_files)
 
-num_fe_file = os.path.join(args.data_dir, args.num_fe_file)
-print("num_fe_file", num_fe_file)
+print("us_fe_file", args.us_fe_file)
+print("us_pmf_file", args.us_pmf_file)
 
-exact_pmf_file = os.path.join(args.data_dir, args.exact_pmf_file)
-print("exact_pmf_file", exact_pmf_file)
+fe_us = pickle.load(open(args.us_fe_file, "r"))
+fe_us["fe"] = first_to_zero(fe_us["fe"])
 
-fe_num = pickle.load(open(num_fe_file, "r"))
-fe_num["fe"] = first_to_zero(fe_num["fe"])
-
-pmf_exact = pickle.load(open(exact_pmf_file , "r"))
-pmf_exact["pmf"] = min_to_zero(pmf_exact["pmf"])
+pmf_us = dict()
+pmf_us["pmf"] = np.loadtxt(args.us_pmf_file)[:, 1]
+pmf_us["pmf"] *= BETA   # kcal/mol to KT/mol or RT
+pmf_us["pmf"] = min_to_zero(pmf_us["pmf"])
 
 data_estimator_pairs = args.data_estimator_pairs.split()
 if len(data_estimator_pairs) != len(free_energies_pmfs_files):
@@ -97,14 +100,19 @@ all_data = {}
 for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file_name, "r"))
 
+    if label == "s_u":
+        pmf_us["pmf"]["pmf_bin_edges"] = copy.deepcopy(data["pmfs"]["pmf_bin_edges"])
+
     # reverse order
     if label == "r_u":
         data = reverse_data_order(data)
 
     # replicate data
     if label in ["f_u", "r_u", "fr_b"]:
-        data = replicate_data(data, args.system_type)
+        print("Right replicate for", label)
+        data = replicate_data_cuc7_da(data, args.system_type)
 
+    # TODO
     # put first of fes to zero
     data = put_first_of_fe_to_zero(data)
 
