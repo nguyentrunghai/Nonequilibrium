@@ -69,7 +69,7 @@ BETA = 1/KB/TEMPERATURE
 def _down_sampling(array, n_points):
     indices = np.linspace(0, array.shape[0] - 1, n_points)
     indices = np.round(indices)
-    indices = indices.astype(indices)
+    indices = indices.astype(int)
     return indices
 
 
