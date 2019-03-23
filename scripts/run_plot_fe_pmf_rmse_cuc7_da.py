@@ -10,6 +10,7 @@ from __future__ import division
 import argparse
 import pickle
 import os
+import copy
 
 import numpy as np
 
@@ -58,6 +59,7 @@ KB = 0.0019872041   # kcal/mol/K
 TEMPERATURE = 300.
 BETA = 1/KB/TEMPERATURE
 
+
 def _rmse(main_estimates, reference):
     squared_deviations = [(estimates - reference)**2 for estimates in main_estimates.values()]
     squared_deviations = np.array(squared_deviations)
@@ -101,7 +103,7 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
     data = pickle.load(open(file_name, "r"))
 
     if label == "s_u":
-        pmf_us["pmf"]["pmf_bin_edges"] = copy.deepcopy(data["pmfs"]["pmf_bin_edges"])
+        pmf_us["pmf_bin_edges"] = copy.deepcopy(data["pmfs"]["pmf_bin_edges"])
 
     # reverse order
     if label == "r_u":
@@ -112,14 +114,15 @@ for file_name, label in zip(free_energies_pmfs_files, data_estimator_pairs):
         print("Right replicate for", label)
         data = replicate_data_cuc7_da(data, args.system_type)
 
-    # TODO
     # put first of fes to zero
     data = put_first_of_fe_to_zero(data)
 
     # put argmin of pmf to pmf_exact["pmf"]
-    data = put_argmin_of_pmf_to_target(data, pmf_exact["pmf"])
+    data = put_argmin_of_pmf_to_target(data, pmf_us["pmf"])
 
     all_data[label] = data
+
+# TODO
 
 fe_rmse = {}
 fe_rmse_std_error = {}
