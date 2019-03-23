@@ -159,7 +159,7 @@ if args.n_fe_points_to_plot != 0:
     x = x[indices]
     y = y[indices]
 xs.append(x)
-ys.append(x)
+ys.append(y)
 yerrs.append(None)
 
 if args.xlimits_fe.lower() != "none":
