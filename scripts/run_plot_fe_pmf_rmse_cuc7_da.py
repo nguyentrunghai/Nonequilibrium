@@ -66,7 +66,7 @@ BETA = 1/KB/TEMPERATURE
 def _rmse(main_estimates, reference):
     squared_deviations = [(estimates - reference)**2 for estimates in main_estimates.values()]
     squared_deviations = np.array(squared_deviations)
-    return squared_deviations.mean(axis=0)
+    return np.sqrt(squared_deviations.mean(axis=0))
 
 
 def _rmse_std_error(pull_data, reference):
@@ -140,7 +140,7 @@ fe_rmse = {}
 fe_rmse_std_error = {}
 pmf_rmse = {}
 pmf_rmse_std_error = {}
-for label in all_data:
+for label in data_estimator_pairs:
     fe_rmse[label] = _rmse(all_data[label]["free_energies"]["main_estimates"], fe_us["fe"])
     fe_rmse_std_error[label] = _rmse_std_error(all_data[label]["free_energies"], fe_us["fe"])
 
