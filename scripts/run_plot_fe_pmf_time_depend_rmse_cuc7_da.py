@@ -93,17 +93,14 @@ for label in data_estimator_pairs:
 
 fes_pmfs_files = {}
 for label, matching in zip(data_estimator_pairs, fes_pmfs_file_matching):
-    fes_pmfs_files[label] = glob.glob(os.path.join(args.data_dir, matching))
+    fes_pmfs_files[label] = glob.glob(os.path.join(args.pull_data_dir, matching))
 
 number_of_files = [len(files) for files in fes_pmfs_files.values()]
 if np.unique(number_of_files).shape[0] != 1:
     raise ValueError("different labels do not have the same number of files")
 
-us_fe_file = os.path.join(args.data_dir, args.us_fe_file)
-print("us_fe_file", us_fe_file)
-
-us_pmf_file = os.path.join(args.data_dir, args.us_pmf_file)
-print("us_pmf_file", us_pmf_file)
+print("us_fe_file", args.us_fe_file)
+print("us_pmf_file", args.us_pmf_file)
 
 fe_us = pickle.load(open(args.us_fe_file, "r"))
 fe_us["fe"] = first_to_zero(fe_us["fe"])
