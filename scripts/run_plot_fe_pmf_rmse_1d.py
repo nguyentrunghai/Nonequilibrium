@@ -57,7 +57,7 @@ args = parser.parse_args()
 def _rmse(main_estimates, reference):
     squared_deviations = [(estimates - reference)**2 for estimates in main_estimates.values()]
     squared_deviations = np.array(squared_deviations)
-    return squared_deviations.mean(axis=0)
+    return np.sqrt(squared_deviations.mean(axis=0))
 
 
 def _rmse_std_error(pull_data, reference):
