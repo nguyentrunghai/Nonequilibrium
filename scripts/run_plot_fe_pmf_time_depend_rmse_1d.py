@@ -13,7 +13,7 @@ import numpy as np
 
 from _plots import plot_lines
 from _fe_pmf_plot_utils import first_to_zero, min_to_zero
-from _fe_pmf_plot_utils import reverse_data_order, replicate_data
+from _fe_pmf_plot_utils import reverse_data_order, replicate_data_1d
 from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_target
 
 parser = argparse.ArgumentParser()
@@ -129,7 +129,7 @@ for label in data_estimator_pairs:
 
         # replicate data
         if label in ["f_u", "r_u", "fr_b"]:
-            data = replicate_data(data, args.system_type)
+            data = replicate_data_1d(data, args.system_type)
 
         # put first of fes to zero
         data = put_first_of_fe_to_zero(data)
