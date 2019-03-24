@@ -63,7 +63,7 @@ def _rmse(main_estimates, reference, truncate):
         squared_deviations.append(np.nanmean(sd))
 
     squared_deviations = np.array(squared_deviations)
-    return squared_deviations.mean()
+    return np.sqrt(squared_deviations.mean())
 
 
 def _rmse_std_error(pull_data, reference, truncate):
