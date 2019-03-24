@@ -13,15 +13,15 @@ import numpy as np
 
 from _plots import plot_lines
 from _fe_pmf_plot_utils import first_to_zero, min_to_zero
-from _fe_pmf_plot_utils import reverse_data_order, replicate_data_1d
+from _fe_pmf_plot_utils import reverse_data_order, replicate_data_cuc7_da, replicate
 from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_target
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_dir", type=str, default="./")
 
 parser.add_argument("--fes_pmfs_file_matching", type=str, default="file1* file2*")
-parser.add_argument("--num_fe_file", type=str, default="fe_numerical.pkl")
-parser.add_argument("--exact_pmf_file", type=str, default="pmf_exact.pkl")
+parser.add_argument("--us_fe_file", type=str, default="fe_us.pkl")
+parser.add_argument("--us_pmf_file", type=str, default="pmf_us.dat")
 
 parser.add_argument( "--system_type", type=str, default="symmetric")
 
@@ -30,10 +30,10 @@ parser.add_argument("--data_estimator_pairs", type=str, default="s_u s_b s_s f_u
 parser.add_argument( "--pmf_bin_truncate", type=int, default=0)
 
 parser.add_argument("--fe_xlabel", type=str, default="# of trajectories")
-parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$]")
+parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$] (RT)")
 
 parser.add_argument("--pmf_xlabel", type=str, default="# of trajectories")
-parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$]")
+parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$] (RT)")
 
 parser.add_argument("--legend_ncol_fe", type=int, default=1)
 parser.add_argument("--legend_ncol_pmf", type=int, default=1)
@@ -48,6 +48,11 @@ parser.add_argument("--fe_out", type=str, default="fe_rmse_time_depend.pdf")
 parser.add_argument("--pmf_out", type=str, default="pmf_rmse_time_depend.pdf")
 
 args = parser.parse_args()
+
+
+KB = 0.0019872041   # kcal/mol/K
+TEMPERATURE = 300.
+BETA = 1/KB/TEMPERATURE
 
 
 def _rmse(main_estimates, reference, truncate):
@@ -94,17 +99,22 @@ number_of_files = [len(files) for files in fes_pmfs_files.values()]
 if np.unique(number_of_files).shape[0] != 1:
     raise ValueError("different labels do not have the same number of files")
 
-num_fe_file = os.path.join(args.data_dir, args.num_fe_file)
-print("num_fe_file", num_fe_file)
+us_fe_file = os.path.join(args.data_dir, args.us_fe_file)
+print("us_fe_file", us_fe_file)
 
-exact_pmf_file = os.path.join(args.data_dir, args.exact_pmf_file)
-print("exact_pmf_file", exact_pmf_file)
+us_pmf_file = os.path.join(args.data_dir, args.us_pmf_file)
+print("us_pmf_file", us_pmf_file)
 
-fe_num = pickle.load(open(num_fe_file, "r"))
-fe_num["fe"] = first_to_zero(fe_num["fe"])
+fe_us = pickle.load(open(args.us_fe_file, "r"))
+fe_us["fe"] = first_to_zero(fe_us["fe"])
+if args.system_type == "asymmetric":
+    fe_us["lambdas"] = replicate(fe_us["lambdas"], "as_is", exclude_last_in_first_half=True)
+    fe_us["fe"] = replicate(fe_us["fe"], "as_is", exclude_last_in_first_half=True)
 
-pmf_exact = pickle.load(open(exact_pmf_file , "r"))
-pmf_exact["pmf"] = min_to_zero(pmf_exact["pmf"])
+pmf_us = dict()
+pmf_us["pmf"] = np.loadtxt(args.us_pmf_file)[:, 1]
+pmf_us["pmf"] *= BETA   # kcal/mol to KT/mol or RT
+pmf_us["pmf"] = min_to_zero(pmf_us["pmf"])
 
 fe_rmse  = {}
 pmf_rmse = {}
@@ -129,24 +139,25 @@ for label in data_estimator_pairs:
 
         # replicate data
         if label in ["f_u", "r_u", "fr_b"]:
-            data = replicate_data_1d(data, args.system_type)
+            data = replicate_data_cuc7_da(data, args.system_type)
 
         # put first of fes to zero
         data = put_first_of_fe_to_zero(data)
 
         # put argmin of pmf to pmf_exact["pmf"]
-        data = put_argmin_of_pmf_to_target(data, pmf_exact["pmf"])
+        data = put_argmin_of_pmf_to_target(data, pmf_us["pmf"])
 
-        fe_r = _rmse(data["free_energies"]["main_estimates"], fe_num["fe"], truncate=0)
-        fe_r_error = _rmse_std_error(data["free_energies"], fe_num["fe"], truncate=0)
+        fe_r = _rmse(data["free_energies"]["main_estimates"], fe_us["fe"], truncate=0)
+        fe_r_error = _rmse_std_error(data["free_energies"], fe_us["fe"], truncate=0)
         fe_rmse[label].append((ntrajs, fe_r, fe_r_error))
 
-        pmf_r = _rmse(data["pmfs"]["main_estimates"], pmf_exact["pmf"], truncate=args.pmf_bin_truncate)
-        pmf_r_error = _rmse_std_error(data["pmfs"], pmf_exact["pmf"], truncate=args.pmf_bin_truncate)
+        pmf_r = _rmse(data["pmfs"]["main_estimates"], pmf_us["pmf"], truncate=args.pmf_bin_truncate)
+        pmf_r_error = _rmse_std_error(data["pmfs"], pmf_us["pmf"], truncate=args.pmf_bin_truncate)
         pmf_rmse[label].append((ntrajs, pmf_r, pmf_r_error))
 
     fe_rmse[label].sort(key=lambda item: item[0])
     pmf_rmse[label].sort(key=lambda item: item[0])
+
 
 # plot fe rmse
 xs = []
