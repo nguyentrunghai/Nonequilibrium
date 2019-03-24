@@ -17,7 +17,7 @@ from _fe_pmf_plot_utils import reverse_data_order, replicate_data_cuc7_da, repli
 from _fe_pmf_plot_utils import put_first_of_fe_to_zero, put_argmin_of_pmf_to_target
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--data_dir", type=str, default="./")
+parser.add_argument("--pull_data_dir", type=str, default="./")
 
 parser.add_argument("--fes_pmfs_file_matching", type=str, default="file1* file2*")
 parser.add_argument("--us_fe_file", type=str, default="fe_us.pkl")
