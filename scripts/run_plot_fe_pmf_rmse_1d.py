@@ -117,7 +117,7 @@ fe_rmse = {}
 fe_rmse_std_error = {}
 pmf_rmse = {}
 pmf_rmse_std_error = {}
-for label in all_data:
+for label in data_estimator_pairs:
     fe_rmse[label] = _rmse(all_data[label]["free_energies"]["main_estimates"], fe_num["fe"])
     fe_rmse_std_error[label] = _rmse_std_error(all_data[label]["free_energies"], fe_num["fe"])
 
