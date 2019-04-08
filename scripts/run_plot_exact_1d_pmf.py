@@ -49,7 +49,7 @@ bin_centers, exact_pmf = _exact_pmf(args.system_type, pmf_bin_edges)
 plot_lines([bin_centers], [exact_pmf],
            xlabel=args.xlabel, ylabel=args.ylabel,
            out=args.out,
-           lw=1.0)
+           lw=2.0)
 
 print("DONE")
 
