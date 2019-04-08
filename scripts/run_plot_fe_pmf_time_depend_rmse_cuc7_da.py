@@ -33,7 +33,7 @@ parser.add_argument("--fe_xlabel", type=str, default="# of trajectories")
 parser.add_argument("--fe_ylabel", type=str, default="RMSE[$\Delta F_{\lambda}$] (RT)")
 
 parser.add_argument("--pmf_xlabel", type=str, default="# of trajectories")
-parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(z)$] (RT)")
+parser.add_argument("--pmf_ylabel", type=str, default="RMSE[$\Phi(d)$] (RT)")
 
 parser.add_argument("--legend_ncol_fe", type=int, default=1)
 parser.add_argument("--legend_ncol_pmf", type=int, default=1)
