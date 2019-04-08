@@ -46,7 +46,7 @@ def _exact_pmf(system_type, pmf_bin_edges):
 pmf_bin_edges = np.linspace(args.left_most_edge, args.right_most_edge, args.pmf_nbins + 1)
 bin_centers, exact_pmf = _exact_pmf(args.system_type, pmf_bin_edges)
 
-plot_lines([bin_centers], [pmf_bin_edges],
+plot_lines([bin_centers], [exact_pmf],
            xlabel=args.xlabel, ylabel=args.ylabel,
            out=args.out,
            lw=1.0)
