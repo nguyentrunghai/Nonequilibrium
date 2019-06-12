@@ -25,6 +25,8 @@ parser.add_argument("--units", type=str, default="Rt Rt Rt kcal_per_mol kcal_per
 
 parser.add_argument("--legend_ncol", type=int, default=2)
 
+parser.add_argument("--n_points_to_plot", type=int, default=40)
+
 parser.add_argument("--xlabel", type=str, default="$z$ (nm)")
 parser.add_argument("--ylabel", type=str, default="$\Phi(z)$ (RT)")
 
@@ -38,6 +40,14 @@ args = parser.parse_args()
 KB = 0.0019872041   # kcal/mol/K
 TEMPERATURE = 300.
 BETA = 1/KB/TEMPERATURE
+
+
+def _down_sampling(array, n_points):
+    indices = np.linspace(0, array.shape[0] - 1, n_points)
+    indices = np.round(indices)
+    indices = indices.astype(int)
+    return indices
+
 
 data_files = [os.path.join(args.data_dir, f) for f in args.data_files.split()]
 print("data_files:", data_files)
@@ -65,11 +75,14 @@ for f, unit in zip(data_files, units):
     if unit == "kcal_per_mol":
         y *= BETA       # kcal/mol to KT/mol or RT
 
+    indices = _down_sampling(y, args.n_points_to_plot)
+    y = y[indices]
+    x = x[indices]
+
     y = min_to_zero(y)
 
     xs.append(x)
     ys.append(y)
-
 
 if args.xlimits.lower() != "none":
     xlimits = [float(s) for s in args.xlimits.split()]
