@@ -107,7 +107,7 @@ plot_lines(xs, ys,
            xlimits=xlimits,
            ylimits=ylimits,
            lw=1.0,
-           markersize=4,
+           markersize=2,
            alpha=1.,
            n_xtics=8,
            n_ytics=8)
