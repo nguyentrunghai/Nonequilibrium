@@ -39,7 +39,7 @@ KB = 0.0019872041   # kcal/mol/K
 TEMPERATURE = 300.
 BETA = 1/KB/TEMPERATURE
 
-data_files = [os.path.join(f, args.data_dir) for f in args.data_files.split()]
+data_files = [os.path.join(args.data_dir, f) for f in args.data_files.split()]
 print("data_files:", data_files)
 
 labels = args.labels.split()
