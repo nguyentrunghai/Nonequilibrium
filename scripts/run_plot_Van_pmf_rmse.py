@@ -32,3 +32,16 @@ def _indices_closest_to(ref_array, query_array):
     indices = [_index_closest_to(ref_array, test) for test in query_array]
     return indices
 
+
+def _absolute_deviation(ref_pmf, pmf):
+    """
+    :param ref_pmf, 2D array of shape (2, n1_bins)
+    :param pmf, 2D array of shape (2, n2_bins)
+    :return: abs_dev, 2D array of shape (2, n2_bins)
+    """
+    align_indices = _indices_closest_to(ref_pmf[:, 0], pmf[:, 0])
+    bin_centers = pmf[:, 0]
+    ad = np.abs(ref_pmf[align_indices, 1] - pmf[:, 1])
+    abs_dev = np.hstack((bin_centers[:, np.newaxis], ad[:, np.newaxis]))
+
+    return abs_dev
