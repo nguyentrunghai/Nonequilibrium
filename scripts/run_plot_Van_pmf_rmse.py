@@ -4,6 +4,9 @@ plot rmse of pmf data from Van A Ngo from Los Alamos
 from __future__ import print_function
 from __future__ import division
 
+import os
+import argparse
+
 import numpy as np
 
 from _fe_pmf_plot_utils import min_to_zero
@@ -41,7 +44,11 @@ def _absolute_deviation(ref_pmf, pmf):
     """
     align_indices = _indices_closest_to(ref_pmf[:, 0], pmf[:, 0])
     bin_centers = pmf[:, 0]
-    ad = np.abs(ref_pmf[align_indices, 1] - pmf[:, 1])
-    abs_dev = np.hstack((bin_centers[:, np.newaxis], ad[:, np.newaxis]))
 
+    ref = min_to_zero(ref_pmf[align_indices, 1])
+    target = min_to_zero(pmf[:, 1])
+
+    ad = np.abs(target - ref)
+    abs_dev = np.hstack((bin_centers[:, np.newaxis], ad[:, np.newaxis]))
     return abs_dev
+
