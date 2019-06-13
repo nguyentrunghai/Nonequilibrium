@@ -15,7 +15,7 @@ from _plots import plot_lines
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_dir", type=str, default="./")
 parser.add_argument("--data_files", type=str,
-                    default="unidirectional.dat bidirectional.dat s1.dat pmf.dat us_pmf.dat")
+                    default="unidirectional.dat bidirectional.dat s1.dat MA+WHAM.dat us_pmf.dat")
 
 parser.add_argument("--labels", type=str, default="u b s b+WHAM us")
 parser.add_argument("--colors", type=str, default="blue green red cyan black")
