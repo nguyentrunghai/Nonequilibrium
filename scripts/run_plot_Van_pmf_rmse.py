@@ -10,6 +10,7 @@ import argparse
 import numpy as np
 
 from _fe_pmf_plot_utils import min_to_zero
+from _plots import plot_lines
 
 
 def _index_closest_to(ref_array, query_number):
