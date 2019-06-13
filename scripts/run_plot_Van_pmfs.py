@@ -1,4 +1,5 @@
 """
+plot pmf data from Van A Ngo from Los Alamos
 """
 
 from __future__ import print_function
