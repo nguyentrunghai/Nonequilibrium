@@ -94,7 +94,7 @@ labels = args.labels.split()
 print("labels:", labels)
 
 data_files = [os.path.join(args.data_dir, f) for f in args.data_files.split()]
-data_files = {label: data_file for label, data_file in zip(data_files, labels)}
+data_files = {label: data_file for label, data_file in zip(labels, data_files)}
 print("data_files:", data_files)
 
 colors = args.colors.split()
