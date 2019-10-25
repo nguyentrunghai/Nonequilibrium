@@ -106,8 +106,16 @@ def _time_z_work(tcl_force_out_file, pulling_speed, lambda_0, k):
 
 
 def _combine_forward_backward(forward_force_file, backward_force_file,
-                              pulling_speed,
-                              lambda_min, lambda_max, k):
+                              pulling_speed, lambda_min, lambda_max, k):
+    """
+    :param forward_force_file:
+    :param backward_force_file:
+    :param pulling_speed:
+    :param lambda_min:
+    :param lambda_max:
+    :param k:
+    :return:
+    """
     t_F, zF_t, wF_t = _time_z_work(forward_force_file, pulling_speed, lambda_min, k)
     t_R, zR_t, wR_t = _time_z_work(backward_force_file, -pulling_speed, lambda_max, k)
 
@@ -122,15 +130,15 @@ def _combine_forward_backward(forward_force_file, backward_force_file,
     return pulling_times, lambda_F, lambda_R, z_t, w_t
 
 
-def _take_only_forward(forward_force_file, pulling_speed, lambda_min):
-    t_F, zF_t, wF_t = _time_z_work(forward_force_file, pulling_speed)
+def _take_only_forward(forward_force_file, pulling_speed, lambda_min, k):
+    t_F, zF_t, wF_t = _time_z_work(forward_force_file, pulling_speed, lambda_min, k)
     lambda_F = _lambda_t(t_F, pulling_speed, lambda_min)
     pulling_times = t_F
     return pulling_times, lambda_F, zF_t, wF_t
 
 
-def _take_only_backward(backward_force_file, pulling_speed, lambda_max):
-    t_R, zR_t, wR_t = _time_z_work(backward_force_file, -pulling_speed)
+def _take_only_backward(backward_force_file, pulling_speed, lambda_max, k):
+    t_R, zR_t, wR_t = _time_z_work(backward_force_file, -pulling_speed, lambda_max, k)
     lambda_R = _lambda_t(t_R, -pulling_speed, lambda_max)
     pulling_times = t_R
     return pulling_times, lambda_R, zR_t, wR_t
@@ -139,7 +147,7 @@ def _take_only_backward(backward_force_file, pulling_speed, lambda_max):
 
 assert args.protocol in ["symmetric", "asymmetric"], "Unrecognized protocol"
 
-ks = 100. * BETA * args.force_constant
+ks = 100. * BETA * args.force_constant             # KT per angstrom **2
 lambda_min = float(args.lambda_range.split()[0])
 lambda_max = float(args.lambda_range.split()[1])
 
@@ -157,10 +165,12 @@ backward_files = [os.path.join(args.backward_pull_dir, "%d"%i, args.backward_for
 
 if args.protocol == "symmetric":
     pulling_times, lambda_F, lambda_R, _, _ = _combine_forward_backward(forward_files[0], backward_files[0],
-                                                                  args.pulling_speed, lambda_min, lambda_max)
+                                                                        args.pulling_speed, lambda_min, lambda_max,
+                                                                        args.force_constant)
 else:
-    pulling_times, lambda_F, _, _ = _take_only_forward(forward_files[0], args.pulling_speed, lambda_min)
-    _, lambda_R, _, _ = _take_only_backward(backward_files[0], args.pulling_speed, lambda_max)
+    pulling_times, lambda_F, _, _ = _take_only_forward(forward_files[0], args.pulling_speed, lambda_min,
+                                                       args.force_constant)
+    _, lambda_R, _, _ = _take_only_backward(backward_files[0], args.pulling_speed, lambda_max, args.force_constant)
 
 
 dt = pulling_times[1] - pulling_times[0]
