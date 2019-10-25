@@ -41,6 +41,17 @@ TEMPERATURE = 300.
 BETA = 1/KB/TEMPERATURE
 
 
+def _lambda_t(pulling_times, pulling_speed, lambda_0):
+    """
+    :param pulling_times: ndarray of float, ps
+    :param pulling_speed: float, Angstrom per ps
+    :param lambda_0: float, Angstrom
+    :return: lambda_t, ndarray of float
+    """
+    lambda_t = pulling_times*pulling_speed + lambda_0
+    return lambda_t
+
+
 def _time_z_work(tcl_force_out_file, pulling_speed):
     """
     :param tcl_force_out_file: str, file name
@@ -62,17 +73,6 @@ def _time_z_work(tcl_force_out_file, pulling_speed):
     w_t = np.cumsum(w_t)
 
     return pulling_times, z_t, w_t
-
-
-def _lambda_t(pulling_times, pulling_speed, z0):
-    """
-    :param pulling_times: ndarray of float, ps
-    :param pulling_speed: float, Angstrom per ps
-    :param z0: float, Angstrom
-    :return: lambda_t, ndarray of float
-    """
-    lambda_t = pulling_times*pulling_speed + z0
-    return lambda_t
 
 # -----------
 
