@@ -12,6 +12,7 @@ import argparse
 import numpy as np
 import netCDF4 as nc
 
+from models_1d import V
 from _IO import save_to_nc
 
 parser = argparse.ArgumentParser()
@@ -50,6 +51,29 @@ def _lambda_t(pulling_times, pulling_speed, lambda_0):
     """
     lambda_t = pulling_times*pulling_speed + lambda_0
     return lambda_t
+
+
+def _work_integrate(lambda_t, z_t, k):
+    """
+    lambda_t    :   np.array of shape (times), restrained center
+    z_t         :   np.array of shape (times), restrained coordinate
+    k           :   float, harmonic force constant
+    """
+    assert lambda_t.ndim == z_t.ndim == 1, "lambda_t and z_t must be 1d"
+    assert lambda_t.shape == z_t.shape, "lambda_t and z_t must have the same shape"
+
+    times = lambda_t.shape[0]
+    w_t = np.zeros(times, dtype=float)
+
+    # eq (3.4) in Christopher Jarzynski, Prog. Theor. Phys. Suppl 2006, 165, 1
+    #w_t[1:] = - 2 * k * np.cumsum( (z_t[:-1] - lambda_t[:-1]) * (lambda_t[1:] - lambda_t[:-1]) )
+
+    # in D. Minh and J. Chodera J Chem Phys 2009, 131, 134110. in Potential of mean force section
+    # this is consistent with 1d model
+    w_t[1:] = V(z_t[1:], k, lambda_t[1:]) - V(z_t[1:], k, lambda_t[:-1])
+    w_t = np.cumsum(w_t)
+
+    return w_t
 
 
 def _time_z_work(tcl_force_out_file, pulling_speed):
