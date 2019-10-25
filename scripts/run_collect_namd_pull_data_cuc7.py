@@ -117,7 +117,7 @@ print("exclude", exclude)
 
 indices_to_collect = [i for i in range(start, end) if i not in exclude]
 
-forward_files  = [os.path.join(args.forward_pull_dir, "%d"%i, args.forward_force_file)
+forward_files = [os.path.join(args.forward_pull_dir, "%d"%i, args.forward_force_file)
                   for i in indices_to_collect]
 backward_files = [os.path.join(args.backward_pull_dir, "%d"%i, args.backward_force_file)
                   for i in indices_to_collect]
@@ -127,10 +127,10 @@ for f in forward_files:
 for f in backward_files:
     assert os.path.exists(f), f + " does not exit."
 
-pulling_times_F, _, _ = _time_z_work(forward_files[0], args.pulling_speed)
+pulling_times_F, _, _ = _time_z_work(forward_files[0], args.pulling_speed, lambda_min, args.force_constant)
 lambda_F = _lambda_t(pulling_times_F, args.pulling_speed, lambda_min)
 
-pulling_times_R, _, _ = _time_z_work(backward_files[0], -args.pulling_speed)
+pulling_times_R, _, _ = _time_z_work(backward_files[0], -args.pulling_speed, lambda_max, args.force_constant)
 lambda_R = _lambda_t(pulling_times_R, -args.pulling_speed, lambda_max)
 
 dt = pulling_times_F[1] - pulling_times_F[0]
@@ -147,13 +147,13 @@ wR_ts = np.zeros([total_ntrajs, nsteps], dtype=float)
 
 for i, (f_file, b_file) in enumerate(zip(forward_files, backward_files)):
     print("loading " + f_file)
-    _, zF_t, wF_t = _time_z_work(f_file, args.pulling_speed)
+    _, zF_t, wF_t = _time_z_work(f_file, args.pulling_speed, lambda_min, args.force_constant)
     assert zF_t.shape[0] == nsteps, f_file + " do not have correct timesteps"
     zF_ts[i, :] = zF_t
     wF_ts[i, :] = wF_t
 
     print("loading " + b_file)
-    _, zR_t, wR_t = _time_z_work(b_file, -args.pulling_speed)
+    _, zR_t, wR_t = _time_z_work(b_file, -args.pulling_speed, lambda_max, args.force_constant)
     assert zR_t.shape[0] == nsteps, b_file + " do not have correct timesteps"
     zR_ts[i, :] = zR_t
     wR_ts[i, :] = wR_t
