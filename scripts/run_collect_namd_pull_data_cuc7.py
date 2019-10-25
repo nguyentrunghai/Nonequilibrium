@@ -76,25 +76,29 @@ def _work_integrate(lambda_t, z_t, k):
     return w_t
 
 
-def _time_z_work(tcl_force_out_file, pulling_speed):
+def _time_z_work(tcl_force_out_file, pulling_speed, lambda_0, k):
     """
     :param tcl_force_out_file: str, file name
     :param pulling_speed: float, Angstrom per ps
+    :param lambda_0: float, initial value of lambda
     :return: (pulling_times, z_t, w_t) in (ps, Angstrom, kcal/mol)
     """
     data = np.loadtxt(tcl_force_out_file)
 
     pulling_times = data[:, 0]
     z_t = data[:, 1]
-    forces = data[:, 2]
+    #forces = data[:, 2]
 
-    nsteps = len(pulling_times)
+    #nsteps = len(pulling_times)
 
-    w_t = np.zeros([nsteps], dtype=float)
-    dts = pulling_times[1:] - pulling_times[:-1]
+    #w_t = np.zeros([nsteps], dtype=float)
+    #dts = pulling_times[1:] - pulling_times[:-1]
 
-    w_t[1:] = pulling_speed * forces[:-1] * dts
-    w_t = np.cumsum(w_t)
+    #w_t[1:] = pulling_speed * forces[:-1] * dts
+    #w_t = np.cumsum(w_t)
+
+    lambda_t = _lambda_t(pulling_times, pulling_speed, lambda_0)
+    w_t = _work_integrate(lambda_t, z_t, k)
 
     return pulling_times, z_t, w_t
 
