@@ -32,7 +32,7 @@ parser.add_argument("--exclude", type=str,  default=" ")
 
 parser.add_argument("--pulling_speed", type=float,  default=0.01) # Angstrom per ps = speed in A per step / (2*10**(-3))
 parser.add_argument("--force_constant", type=float,  default=7.2) # kcal/mol/A^2
-parser.add_argument("--lambda_range", type=str,  default="13. 33.")
+parser.add_argument("--lambda_range", type=str,  default="13. 33.") # angstrom
 
 parser.add_argument("--out", type=str,  default="pull_data.nc")
 
@@ -67,7 +67,6 @@ def _work_integrate(lambda_t, z_t, k):
     w_t = np.zeros(times, dtype=float)
 
     # eq (3.4) in Christopher Jarzynski, Prog. Theor. Phys. Suppl 2006, 165, 1
-    # 2 because MMTK use k*(x-l)**2 (without a factor 1/2)
     #w_t[1:] = - 2 * k * np.cumsum( (z_t[:-1] - lambda_t[:-1]) * (lambda_t[1:] - lambda_t[:-1]) )
 
     # in D. Minh and J. Chodera J Chem Phys 2009, 131, 134110. in Potential of mean force section
@@ -82,6 +81,7 @@ def _time_z_work(tcl_force_out_file, pulling_speed, lambda_0, k):
     """
     :param tcl_force_out_file: str, file name
     :param pulling_speed: float, Angstrom per ps
+    :param lambda_0: float, initial value of lambda
     :return: (pulling_times, z_t, w_t) in (ps, Angstrom, kcal/mol)
     """
     data = np.loadtxt(tcl_force_out_file)
