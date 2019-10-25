@@ -13,6 +13,7 @@ import copy
 import numpy as np
 import netCDF4 as nc
 
+from models_1d import V
 from _IO import save_to_nc
 
 parser = argparse.ArgumentParser()
@@ -42,7 +43,42 @@ TEMPERATURE = 300.
 BETA = 1/KB/TEMPERATURE
 
 
-def _time_z_work(tcl_force_out_file, pulling_speed):
+def _lambda_t(pulling_times, pulling_speed, lambda_0):
+    """
+    :param pulling_times: ndarray of float, ps
+    :param pulling_speed: float, Angstrom per ps
+    :param lambda_0: float, Angstrom
+    :return: lambda_t, ndarray of float
+    """
+    lambda_t = pulling_times*pulling_speed + lambda_0
+    return lambda_t
+
+
+def _work_integrate(lambda_t, z_t, k):
+    """
+    lambda_t    :   np.array of shape (times), restrained center
+    z_t         :   np.array of shape (times), restrained coordinate
+    k           :   float, harmonic force constant
+    """
+    assert lambda_t.ndim == z_t.ndim == 1, "lambda_t and z_t must be 1d"
+    assert lambda_t.shape == z_t.shape, "lambda_t and z_t must have the same shape"
+
+    times = lambda_t.shape[0]
+    w_t = np.zeros(times, dtype=float)
+
+    # eq (3.4) in Christopher Jarzynski, Prog. Theor. Phys. Suppl 2006, 165, 1
+    # 2 because MMTK use k*(x-l)**2 (without a factor 1/2)
+    #w_t[1:] = - 2 * k * np.cumsum( (z_t[:-1] - lambda_t[:-1]) * (lambda_t[1:] - lambda_t[:-1]) )
+
+    # in D. Minh and J. Chodera J Chem Phys 2009, 131, 134110. in Potential of mean force section
+    # this is consistent with 1d model
+    w_t[1:] = V(z_t[1:], k, lambda_t[1:]) - V(z_t[1:], k, lambda_t[:-1])
+    w_t = np.cumsum(w_t)
+
+    return w_t
+
+
+def _time_z_work(tcl_force_out_file, pulling_speed, lambda_0, k):
     """
     :param tcl_force_out_file: str, file name
     :param pulling_speed: float, Angstrom per ps
@@ -52,35 +88,28 @@ def _time_z_work(tcl_force_out_file, pulling_speed):
 
     pulling_times = data[:, 0]
     z_t = data[:, 1]
-    forces = data[:, 2]
+    #forces = data[:, 2]
 
-    nsteps = len(pulling_times)
+    #nsteps = len(pulling_times)
 
-    w_t = np.zeros([nsteps], dtype=float)
-    dts = pulling_times[1:] - pulling_times[:-1]
+    #w_t = np.zeros([nsteps], dtype=float)
+    #dts = pulling_times[1:] - pulling_times[:-1]
 
-    w_t[1:] = pulling_speed * forces[:-1] * dts
-    w_t = np.cumsum(w_t)
+    #w_t[1:] = pulling_speed * forces[:-1] * dts
+    #w_t = np.cumsum(w_t)
+
+    lambda_t = _lambda_t(pulling_times, pulling_speed, lambda_0)
+    w_t = _work_integrate(lambda_t, z_t, k)
 
     return pulling_times, z_t, w_t
 
 
-def _lambda_t(pulling_times, pulling_speed, z0):
-    """
-    :param pulling_times: ndarray of float, ps
-    :param pulling_speed: float, Angstrom per ps
-    :param z0: float, Angstrom
-    :return: lambda_t, ndarray of float
-    """
-    lambda_t = pulling_times*pulling_speed + z0
-    return lambda_t
-
 
 def _combine_forward_backward(forward_force_file, backward_force_file,
                               pulling_speed,
-                              lambda_min, lambda_max):
-    t_F, zF_t, wF_t = _time_z_work(forward_force_file, pulling_speed)
-    t_R, zR_t, wR_t = _time_z_work(backward_force_file, -pulling_speed)
+                              lambda_min, lambda_max, k):
+    t_F, zF_t, wF_t = _time_z_work(forward_force_file, pulling_speed, lambda_min, k)
+    t_R, zR_t, wR_t = _time_z_work(backward_force_file, -pulling_speed, lambda_max, k)
 
     l_F = _lambda_t(t_F, pulling_speed, lambda_min)
     l_R = _lambda_t(t_R, -pulling_speed, lambda_max)
