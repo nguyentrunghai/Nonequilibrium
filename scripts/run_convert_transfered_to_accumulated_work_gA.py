@@ -32,6 +32,7 @@ def _convert_2_acc_work(w_t, z_t, lambda_t, k):
     acc_w_t = w_t + v_t - v_0
     return acc_w_t
 
+
 with nc.Dataset(args.work_in_file, "r") as handle:
     data = {key: handle.variables[key][:] for key in handle.variables.keys()}
 
