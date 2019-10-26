@@ -33,6 +33,9 @@ def _convert_2_acc_work(w_t, z_t, lambda_t, k):
     return acc_w_t
 
 
+if args.work_in_file == args.work_out_file:
+    raise ValueError("in and out files are the same")
+
 with nc.Dataset(args.work_in_file, "r") as handle:
     data = {key: handle.variables[key][:] for key in handle.variables.keys()}
 
