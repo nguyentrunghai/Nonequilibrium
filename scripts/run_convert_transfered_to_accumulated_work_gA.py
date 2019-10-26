@@ -4,6 +4,8 @@ to convert transfered to accumulated work for gA system
 
 import argparse
 
+import netCDF4 as nc
+
 from models_1d import V
 from _IO import save_to_nc
 
@@ -30,3 +32,13 @@ def _convert_2_acc_work(w_t, z_t, lambda_t, k):
     acc_w_t = w_t + v_t - v_0
     return acc_w_t
 
+with nc.Dataset(args.work_in_file, "r") as handle:
+    data = {key: handle.variables[key][:] for key in handle.variables.keys()}
+
+data["wF_t"] = _convert_2_acc_work(data["wF_t"], data["zF_t"], data["lambda_F"], args.force_constant)
+data["wR_t"] = _convert_2_acc_work(data["wR_t"], data["zR_t"], data["lambda_R"], args.force_constant)
+
+with nc.Dataset(args.work_out_file, "w", format="NETCDF4") as handle:
+    save_to_nc(data, handle)
+
+print("DONE")
