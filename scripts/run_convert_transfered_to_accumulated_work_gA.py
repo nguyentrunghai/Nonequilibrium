@@ -12,8 +12,6 @@ from _IO import save_to_nc
 parser = argparse.ArgumentParser()
 parser.add_argument("--work_in_file", type=str, default="work.nc")
 
-parser.add_argument("--force_constant", type=float, default=100)   # kcal/mol/A^2
-
 parser.add_argument("--work_out_file", type=str, default="accumulated_work.nc")
 args = parser.parse_args()
 
@@ -39,8 +37,10 @@ if args.work_in_file == args.work_out_file:
 with nc.Dataset(args.work_in_file, "r") as handle:
     data = {key: handle.variables[key][:] for key in handle.variables.keys()}
 
-data["wF_t"] = _convert_2_acc_work(data["wF_t"], data["zF_t"], data["lambda_F"], args.force_constant)
-data["wR_t"] = _convert_2_acc_work(data["wR_t"], data["zR_t"], data["lambda_R"], args.force_constant)
+ks = data["ks"][0]   # kcal/mol/A^2quit
+
+data["wF_t"] = _convert_2_acc_work(data["wF_t"], data["zF_t"], data["lambda_F"], ks)
+data["wR_t"] = _convert_2_acc_work(data["wR_t"], data["zR_t"], data["lambda_R"], ks)
 
 with nc.Dataset(args.work_out_file, "w", format="NETCDF4") as handle:
     save_to_nc(data, handle)
