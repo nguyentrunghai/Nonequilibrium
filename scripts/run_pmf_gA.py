@@ -9,6 +9,7 @@ import argparse
 import numpy as np
 import netCDF4 as nc
 
+from models_1d import V
 from estimators import uni_pmf, bi_pmf, sym_est_pmf_v1
 
 parser = argparse.ArgumentParser()
@@ -56,3 +57,14 @@ bin_edges = _pmf_bin_edges(args.pmf_lower_edge, args.pmf_upper_edge, args.pmf_nb
 with nc.Dataset(args.work_data_file, "r") as handle:
     data = {key: handle.variables[key][:] for key in handle.variables.keys()}
 
+zF_t = data["zF_t"][:]
+wF_t = data["wF_t"][:]
+lambda_F = data["lambda_F"][:]
+
+zR_t = data["zR_t"][:]
+wR_t = data["wR_t"][:]
+lambda_R = data["lambda_R"][:]
+
+ks = data["ks"][0]
+
+centers_uni, pmf_uni = uni_pmf(zF_t, wF_t, lambda_F, V, ks, bin_edges)
