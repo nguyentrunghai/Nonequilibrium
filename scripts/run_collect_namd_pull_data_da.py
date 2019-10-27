@@ -147,7 +147,7 @@ def _take_only_backward(backward_force_file, pulling_speed, lambda_max, k):
 
 assert args.protocol in ["symmetric", "asymmetric"], "Unrecognized protocol"
 
-ks = 100. * BETA * args.force_constant             # KT per angstrom **2
+ks = 100. * BETA * args.force_constant             # KT per nm **2
 lambda_min = float(args.lambda_range.split()[0])
 lambda_max = float(args.lambda_range.split()[1])
 
