@@ -16,9 +16,11 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--work_data_file", type=str, default="work.nc")
 
-# lower and upper edges are taken from pmf_min_max/
-parser.add_argument( "--pmf_lower_edge",            type=float, default=1)
-parser.add_argument( "--pmf_upper_edge",            type=float, default=2)
+parser.add_argument( "--pmf_lower_edge",            type=float, default=-13.0)
+parser.add_argument( "--pmf_upper_edge",            type=float, default=13.0)
+
+# in the work data min = -13.4, max=13.3
+parser.add_argument( "--max_abs_z",            type=float, default=13.4)
 
 # number of bins for the PMF
 parser.add_argument( "--pmf_nbins", type=int, default=20)
@@ -52,6 +54,9 @@ if args.symmetric_center == -999:
 else:
     symmetric_center = args.symmetric_center
 bin_edges = _pmf_bin_edges(args.pmf_lower_edge, args.pmf_upper_edge, args.pmf_nbins, symmetric_center)
+
+bin_edges = np.array([-args.max_abs_z] + list(bin_edges) + [args.max_abs_z])
+print("bin_edges", bin_edges)
 
 
 with nc.Dataset(args.work_data_file, "r") as handle:
