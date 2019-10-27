@@ -67,11 +67,11 @@ with nc.Dataset(args.work_data_file, "r") as handle:
     data = {key: handle.variables[key][:] for key in handle.variables.keys()}
 
 zF_t = data["zF_t"][:]             # angstrom
-wF_t = data["wF_t"][:] * BETA
+wF_t = data["wF_t"][:] * BETA      # kT
 lambda_F = data["lambda_F"][:]     # angstrom
 
 zR_t = data["zR_t"][:]             # angstrom
-wR_t = data["wR_t"][:] * BETA
+wR_t = data["wR_t"][:] * BETA      # kT
 lambda_R = data["lambda_R"][:]    # angstrom
 
 ks = data["ks"][0] * BETA    # kT per angstrom ** 2
