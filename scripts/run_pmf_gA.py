@@ -30,6 +30,10 @@ parser.add_argument( "--symmetric_center",   type=float, default=-999)
 
 args = parser.parse_args()
 
+KB = 0.0019872041   # kcal/mol/K
+TEMPERATURE = 300.
+BETA = 1/KB/TEMPERATURE
+
 
 def _pmf_bin_edges(lower, upper, nbins, symmetric_center):
 
@@ -62,14 +66,16 @@ print("bin_edges", bin_edges)
 with nc.Dataset(args.work_data_file, "r") as handle:
     data = {key: handle.variables[key][:] for key in handle.variables.keys()}
 
-zF_t = data["zF_t"][:]
+zF_t = data["zF_t"][:]             # angstrom
 wF_t = data["wF_t"][:]
-lambda_F = data["lambda_F"][:]
+lambda_F = data["lambda_F"][:]     # angstrom
 
-zR_t = data["zR_t"][:]
+zR_t = data["zR_t"][:]             # angstrom
 wR_t = data["wR_t"][:]
-lambda_R = data["lambda_R"][:]
+lambda_R = data["lambda_R"][:]    # angstrom
 
-ks = data["ks"][0]
+ks = data["ks"][0] * BETA    # kT per angstrom ** 2
 
 centers_uni, pmf_uni = uni_pmf(zF_t, wF_t, lambda_F, V, ks, bin_edges)
+
+centers_bi, pmf_bi = bi_pmf(zF_t, wF_t, zR_t, wR_t, lambda_F, V, ks, bin_edges)
