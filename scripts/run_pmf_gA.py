@@ -67,33 +67,40 @@ with nc.Dataset(args.work_data_file, "r") as handle:
     data = {key: handle.variables[key][:] for key in handle.variables.keys()}
 
 zF_t = data["zF_t"][:]             # angstrom
-wF_t = data["wF_t"][:]
+wF_t = data["wF_t"][:] * BETA
 lambda_F = data["lambda_F"][:]     # angstrom
 
 zR_t = data["zR_t"][:]             # angstrom
-wR_t = data["wR_t"][:]
+wR_t = data["wR_t"][:] * BETA
 lambda_R = data["lambda_R"][:]    # angstrom
 
 ks = data["ks"][0] * BETA    # kT per angstrom ** 2
 
+# set work at t0 to zero
+wF_t = wF_t - wF_t[:, [0]]
+wR_t = wR_t - wR_t[:, [0]]
+
+print("Uni-directional estimates")
 centers_uni, pmf_uni = uni_pmf(zF_t, wF_t, lambda_F, V, ks, bin_edges)
 
+print("Bi-directional estimates")
 centers_bi, pmf_bi = bi_pmf(zF_t, wF_t, zR_t, wR_t, lambda_F, V, ks, bin_edges)
 
+print("symmetric estimates")
 centers_s1, pmf_s1 = sym_est_pmf_v1(zF_t, wF_t, lambda_F, V, ks, bin_edges, True)
 
 # output
 with open("unidirectional.dat", "w") as handle:
     handle.write("#  bin_center (Angstrom)       pmf (kT)\n")
     for center, pmf in zip(centers_uni, pmf_uni):
-        handle.write("%10.5e %10.5e\n")
+        handle.write("%10.5e %10.5e\n" % (center, pmf))
 
 with open("bidirectional.dat", "w") as handle:
     handle.write("#  bin_center (Angstrom)       pmf (kT)\n")
     for center, pmf in zip(centers_bi, pmf_bi):
-        handle.write("%10.5e %10.5e\n")
+        handle.write("%10.5e %10.5e\n" % (center, pmf))
 
 with open("s1.dat", "w") as handle:
     handle.write("#  bin_center (Angstrom)       pmf (kT)\n")
     for center, pmf in zip(centers_s1, pmf_s1):
-        handle.write("%10.5e %10.5e\n")
+        handle.write("%10.5e %10.5e\n" % (center, pmf))
