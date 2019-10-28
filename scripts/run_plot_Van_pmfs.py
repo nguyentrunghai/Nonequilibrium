@@ -26,6 +26,7 @@ parser.add_argument("--units", type=str, default="Rt Rt Rt kcal_per_mol kcal_per
 
 parser.add_argument("--legend_ncol", type=int, default=2)
 
+parser.add_argument("--which_to_down_sample", type=str, default="n n n n n")
 parser.add_argument("--n_points_to_plot", type=int, default=40)
 
 parser.add_argument("--xlabel", type=str, default="$z$ (nm)")
@@ -65,10 +66,16 @@ print("markers:", markers)
 units = args.units.split()
 print("units:", units)
 
+which_to_down_sample = args.which_to_down_sample.split()
+for flag in which_to_down_sample:
+    if flag not in ["n", "y"]:
+        raise ValueError("Unknown down-sampling flag")
+print("which_to_down_sample:", which_to_down_sample)
+
 xs = []
 ys = []
 
-for f, unit in zip(data_files, units):
+for f, unit, ds_flag in zip(data_files, units, which_to_down_sample):
     data = np.loadtxt(f)
     x = data[:, 0] / 10.     # angstrom to nm
     y = data[:, 1]
@@ -76,9 +83,10 @@ for f, unit in zip(data_files, units):
     if unit == "kcal_per_mol":
         y *= BETA       # kcal/mol to KT/mol or RT
 
-    indices = _down_sampling(y, args.n_points_to_plot)
-    y = y[indices]
-    x = x[indices]
+    if ds_flag == "y":
+        indices = _down_sampling(y, args.n_points_to_plot)
+        y = y[indices]
+        x = x[indices]
 
     y = min_to_zero(y)
 
